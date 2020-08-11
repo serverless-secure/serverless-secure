@@ -17,6 +17,7 @@ export class ServerlessSecure {
     public acm: any;
     public acmRegion: string;
     public cloudformation: any;
+    private securePaths = [];
     serverless
     commands
     options
@@ -29,8 +30,8 @@ export class ServerlessSecure {
         Globals.options = options;
         this.hooks = {
             'after:deploy:deploy': this.apply.bind(this),
-            // 'before:slsSecure:path': this.beforePath.bind(this),
-            // 'after:slsSecure:path': this.afterPath.bind(this)
+            'before:secure:path': this.beforePath.bind(this),
+            'after:secure:path': this.afterPath.bind(this)
             // 'create_sentinel_role:create': this.create_sentinel_role.bind(this),
             // 'create_notifier_role:create': this.create_notifier_role.bind(this),
             // 'before:package:finalize': this.applyPlugin.bind(this),
@@ -39,7 +40,7 @@ export class ServerlessSecure {
         this.commands = {
             secure: {
                 usage: 'How to secure your lambdas',
-                lifecycleEvents: ['path'],
+                lifecycleEvents: ['create'],
                 options: {
                     path: {
                         usage:
@@ -60,19 +61,14 @@ export class ServerlessSecure {
         this.apigatewayV2 = new this.serverless.providers.aws.sdk.ApiGatewayV2(credentials);
         this.route53 = new this.serverless.providers.aws.sdk.Route53(credentials);
         this.cloudformation = new this.serverless.providers.aws.sdk.CloudFormation(credentials);
+        console.log('credentials', credentials, this.apigateway, this.cloudformation)
+
     }
 
     async apply() {
         this.serverless.cli.log('[Concurrence]: Applying plugin...');
-        this.getRestFunctions();
+        await this.getRestFunctions();
     }
-
-    applyPlugin() {
-        // const { Resources } = this.serverless.service.provider.compiledCloudFormationTemplate;
-        // this.applyAuthorizers(Resources).catch((e: Error) =>
-        //     this.serverless.cli.log(`Could not apply cross lambda Authorizers${e.message}`));
-    }
-
 
     getRestFunctions() {
         const allFunctions = this.serverless.service.getAllFunctions();
@@ -80,7 +76,6 @@ export class ServerlessSecure {
         if (!allFunctions.length) {
             this.notification(`slsSecure: No functions found!!`, 'error');
         }
-        this.beforePath();
     }
 
     notification(message, type) {
@@ -99,48 +94,59 @@ export class ServerlessSecure {
     }
 
     beforePath() {
+        // this.setCredentials();
         this.findYAML()
-
         read(this.baseYAML)
             .then(res => this.parseYAML(res))
             .catch(err => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
     }
+    afterPath() {
+        this.serverless.cli.log(`Secured Paths: ${this.securePaths}`);
+    }
     findYAML() {
+        if (!this.options.path && !this.options.p) {
+            this.notification(`slsSecure: No path set!!`, 'error');
+        }
         if (!fs.existsSync(this.baseYAML)) {
             this.notification('Can not find base YAML file!', 'error')
         }
     };
 
-    afterPath() {
-        this.serverless.cli.log('List of Secure Paths:');
+    updateCustom(content){
+       return _.assign({}, content['custom'], corsConfig);
     }
-
+    updateProvider(content){
+        const { provider } = content;
+        if( provider && 'apiKeys' in provider){
+            provider['apiKeys'].push('slsSecure')
+        } else {
+            return ['slsSecure'];
+        }
+        return _.uniq(provider['apiKeys']);
+     }
     async parseYAML(_content) {
         const content = _content;
-        content['custom'] = _.assign({}, content['custom'], corsConfig);
-        
+        content['custom'] = this.updateCustom(content);
+        content['provider']['apiKeys'] = this.updateProvider(content);
         const opath = this.options.path || this.options.p
         for (const item in content['functions']) {
             
-            if (opath === '*' || opath === item) {
+            if (opath === '.' || opath === item) {
                 const events = content['functions'][item]['events'] || [];
-                console.log('item: ',content['functions'][item])
-                events.map((res: { http: { [x: string]: string; }; }) => {
+                this.securePaths.push(item)
+                await events.map((res: { http: { [x: string]: string; }; }) => {
                     if (res && 'http' in res) {
                         res.http['cors'] = '${self:custom.corsValue}';
-                        res.http['slsSecureAuthorizer'] = 'slsSecureAuthorizer';
+                        if (res['private']==true){
+                            return;
+                        }
+                        res.http['authorizer'] = 'secureAuthorizer';
                     }
                 })
             }
         }
-        console.log('path: ', opath)
-        // if (!this.options.path) {
-            // this.notification(`slsSecure: No path set!!`, 'error');
-        // }
-       
         // console.log(JSON.stringify(content, true, 2))
         await this.writeYAML(content)
-
     }
     async writeYAML(content) {
         // console.log(JSON.stringify(content, true, 2))

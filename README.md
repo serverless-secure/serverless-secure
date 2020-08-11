@@ -30,7 +30,7 @@ npm install serverless-secure -D
 ## Usage
 
 ```sh
-sls secure -p *
+sls secure -p .
 ```
 
 ## Run tests
