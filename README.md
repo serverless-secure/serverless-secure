@@ -44,8 +44,8 @@ npm run test
 👤 **Jason Mullings**
 
 * Website: http://serverless-secure.com/
-* Twitter: [@serverless-secure](https://twitter.com/serverless-secure)
-* Github: [@jmullings](https://github.com/jmullings)
+* Twitter: [@serverless-secure](https://twitter.com/SLSSecure)
+* Github: [@jmullings](https://github.com/serverless-secure)
 * LinkedIn: [@serverless-secure](https://linkedin.com/in/serverless-secure)
 
 ## 🤝 Contributing
@@ -58,7 +58,7 @@ Give a ⭐️ if this project helped you!
 
 ## 📝 License
 
-Copyright © 2020 [Jason Mullings](https://github.com/jmullings).<br />
+Copyright © 2020 [Jason Mullings](https://github.com/serverless-secure).<br />
 This project is [MIT](https://github.com/jmullings/serverless-secure/blob/master/LICENSE) licensed.
 
 ***
