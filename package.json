@@ -7,7 +7,7 @@
     "build": "tsc --project tsconfig.json",
     "test": "jest --coverage",
     "deploy:local": "npm run build && npm link",
-    "develop": "npm link && tsc-watch --project tsconfig.json",
+    "develop": "tsc-watch --project tsconfig.json",
     "postinstall": "npm run build"
   },
   "dependencies": {

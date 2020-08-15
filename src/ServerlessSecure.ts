@@ -44,7 +44,7 @@ export class ServerlessSecure {
         this.commands = {
             secure: {
                 usage: 'How to secure your lambdas',
-                lifecycleEvents: ['path'],
+                lifecycleEvents: ['create'],
                 options: {
                     path: {
                         usage:
@@ -67,6 +67,8 @@ export class ServerlessSecure {
         this.apigatewayV2 = new this.serverless.providers.aws.sdk.ApiGatewayV2(credentials);
         this.route53 = new this.serverless.providers.aws.sdk.Route53(credentials);
         this.cloudformation = new this.serverless.providers.aws.sdk.CloudFormation(credentials);
+        console.log('credentials', credentials, this.apigateway, this.cloudformation)
+
     }
     static parseHttpPath(path: string) {
         return path[0] === '/' ? path : `/${path}`;
@@ -87,6 +89,7 @@ export class ServerlessSecure {
     }
 
     beforePath() {
+        // this.setCredentials();
         this.findYAML()
         read(this.baseYAML)
             .then((res: any) => this.parseYAML(res))
@@ -95,6 +98,7 @@ export class ServerlessSecure {
     afterPath() {
         this.serverless.cli.log('List of Secure Paths:');
     }
+
     findYAML() {
         if (!this.options.path && !this.options.p) {
             this.notification(`slsSecure: No path set!!`, 'error');
@@ -138,7 +142,6 @@ export class ServerlessSecure {
         }
         // console.log(JSON.stringify(content, true, 2))
         await this.writeYAML(content)
-
     }
     async writeYAML(content: any) {
         // console.log(JSON.stringify(content, true, 2))
