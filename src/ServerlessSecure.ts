@@ -1,20 +1,17 @@
 import request from 'request';
-import Globals from "./Globals";
 // @ts-ignore
 import pkg from '../package.json';
 import * as fse from 'fs-extra';
 import * as unzip from 'unzip-stream';
 import updateNotifier from 'update-notifier'
-// import Serverless from 'serverless';
+import Serverless from 'serverless';
 import { read, write } from 'node-yaml'
 import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
-import { corsConfig } from './Config';
-import { ServerlessInstance, ServerlessOptions } from "./types";
-import { TEMP_PATH } from './config';
-import { ZIP_FILE } from './config';
-import { ZIP_URL } from './config';
+import { corsConfig } from './config';
+import { TEMP_PATH, ZIP_FILE , ZIP_URL} from './config';
+
 // import {getAWSPagedResults, sleep, throttledCall} from "./utils";
 
 export class ServerlessSecure {
@@ -24,19 +21,19 @@ export class ServerlessSecure {
     public apigatewayV2: any;
     public route53: any;
     public acm: any;
-    public acmRegion: string;
+    public acmRegion!: string;
     public cloudformation: any;
-    serverless
-    commands
-    options
-    hooks
-    constructor(serverless: ServerlessInstance, options: ServerlessOptions) {
+    serverless: any;
+    commands: { secure: { usage: string; lifecycleEvents: string[]; options: { path: { usage: string; required: boolean; shortcut: string; }; }; }; }
+    options: { path: any; p: any; }
+    hooks: { 'after:deploy:deploy': () => Promise<void>; 'before:secure:path': () => void; 'after:secure:path': () => void; }
+    constructor(serverless: Serverless, options?: any) {
         this.options = options;
-        Globals.options = options;
         this.serverless = serverless;
-        Globals.serverless = serverless;
         this.hooks = {
             'after:deploy:deploy': this.apply.bind(this),
+            'before:secure:path': this.beforePath.bind(this),
+            'after:secure:path': this.afterPath.bind(this)
             // 'before:slsSecure:path': this.beforePath.bind(this),
             // 'after:slsSecure:path': this.afterPath.bind(this)
             // 'create_sentinel_role:create': this.create_sentinel_role.bind(this),
@@ -61,6 +58,9 @@ export class ServerlessSecure {
     }
 
     setCredentials() {
+        let pluginsDirectory = this.serverless.getProject().getRootPath('plugins');
+        console.log({pluginsDirectory})
+        // let pluginDirectory = path.join(pluginsDirectory, pluginName);
         const credentials = this.serverless.providers.aws.getCredentials();
         credentials.region = this.serverless.providers.aws.getRegion();
         this.apigateway = new this.serverless.providers.aws.sdk.APIGateway(credentials);
@@ -84,60 +84,69 @@ export class ServerlessSecure {
         if (!allFunctions.length) {
             this.notification(`slsSecure: No functions found!!`, 'error');
         }
-        this.beforePath();
     }
 
     beforePath() {
         this.findYAML()
-
         read(this.baseYAML)
-            .then(res => this.parseYAML(res))
-            .catch(err => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
+            .then((res: any) => this.parseYAML(res))
+            .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
+    }
+    afterPath() {
+        this.serverless.cli.log('List of Secure Paths:');
     }
     findYAML() {
+        if (!this.options.path && !this.options.p) {
+            this.notification(`slsSecure: No path set!!`, 'error');
+        }
         if (!fs.existsSync(this.baseYAML)) {
             this.notification('Can not find base YAML file!', 'error')
         }
     };
 
-    afterPath() {
-        this.serverless.cli.log('List of Secure Paths:');
+    updateCustom(content: { [x: string]: any; }){
+       return _.assign({}, content['custom'], corsConfig);
     }
-
-    async parseYAML(_content) {
+    updateProvider(content: { provider: any; }){
+        const { provider } = content;
+        if( provider && 'apiKeys' in provider){
+            provider['apiKeys'].push('slsSecure')
+        } else {
+            return ['slsSecure'];
+        }
+        return _.uniq(provider['apiKeys']);
+     }
+    async parseYAML(_content: any) {
+       
         const content = _content;
-        content['custom'] = _.assign({}, content['custom'], corsConfig);
-
+        content['custom'] = this.updateCustom(content);
+        content['provider']['apiKeys'] = this.updateProvider(content);
         const opath = this.options.path || this.options.p
         for (const item in content['functions']) {
-
-            if (opath === '*' || opath === item) {
+            
+            if (opath === '.' || opath === item) {
                 const events = content['functions'][item]['events'] || [];
-                console.log('item: ', content['functions'][item])
-                events.map((res: { http: { [x: string]: string; }; }) => {
+                await events.map((res: any) => {
                     if (res && 'http' in res) {
                         res.http['cors'] = '${self:custom.corsValue}';
-                        res.http['slsSecureAuthorizer'] = 'slsSecureAuthorizer';
+                        if (!res['private'] || res['private']!==true){
+                            res.http['authorizer'] = 'secureAuthorizer';
+                        }
                     }
                 })
             }
         }
-        console.log('path: ', opath)
-        // if (!this.options.path) {
-        // this.notification(`slsSecure: No path set!!`, 'error');
-        // }
-
         // console.log(JSON.stringify(content, true, 2))
         await this.writeYAML(content)
 
     }
-    async writeYAML(content) {
+    async writeYAML(content: any) {
         // console.log(JSON.stringify(content, true, 2))
         await write(this.baseYAML, content)
             .then(this.serverless.cli.log('YAML File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))
-
-        this.downloadSecureLayer();
+            this.downloadSecureLayer();
+       
     };
 
     downloadSecureLayer() {
@@ -145,7 +154,7 @@ export class ServerlessSecure {
             const that = this;
             request
                 .get(ZIP_URL)
-                .on('error', (error) => this.notification(error, 'error'))
+                .on('error', (error) => this.notification(error.message, 'error'))
                 .pipe(fse.createWriteStream(ZIP_FILE))
                 .on('finish', ()=> that.unZipPackage(ZIP_FILE, TEMP_PATH));
         } catch (err) {
@@ -172,7 +181,7 @@ export class ServerlessSecure {
             this.notification(err.message, 'error')
         }
     }
-    notification(message, type) {
+    notification(message: string, type: string) {
         this.serverless.cli.log(message);
         switch (type) {
             case 'success':
