@@ -95,9 +95,7 @@ export class ServerlessSecure {
     }
 
     getRestFunctions() {
-        this.pathExists(this.secureLayer)
         const allFunctions = this.serverless.service.getAllFunctions();
-
         if (!allFunctions.length) {
             this.notification(`slsSecure: No functions found!!`, 'error');
         }
@@ -106,7 +104,7 @@ export class ServerlessSecure {
 
     beforePath() {
         // this.setCredentials();
-        if(this.findYAML()){
+        if(this.findRequirements()){
             read(this.baseYAML)
             .then((res: any) => this.parseYAML(res))
             .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
@@ -116,9 +114,13 @@ export class ServerlessSecure {
         this.serverless.cli.log('List of Secure Paths:');
     }
 
-    findYAML() {
+    findRequirements() {
         if (!this.options.path && !this.options.p) {
             console.log(`sls secure: No path set!!`, 'error')
+            return false;
+        }
+        if (!this.pathExists(this.secureLayer)) {
+            this.notification('Unable to create secure layer!', 'error')
             return false;
         }
         if (!fse.existsSync(this.baseYAML)) {
