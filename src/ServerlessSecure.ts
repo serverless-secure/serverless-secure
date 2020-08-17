@@ -23,10 +23,10 @@ export class ServerlessSecure {
     public acm: any;
     public acmRegion!: string;
     public cloudformation: any;
-    serverless;
+    serverless: Serverless;
     commands: { secure: { usage: string; lifecycleEvents: string[]; options: { path: { usage: string; required: boolean; shortcut: string; }; }; }; }
     options: { path: any; p: any; }
-    hooks;
+    hooks: { 'before:package:finalize': any; 'before:secure:create': any; 'after:secure:create': any; };
     constructor(serverless: Serverless, options?: any) {
         this.options = options;
         this.serverless = serverless;
@@ -79,7 +79,10 @@ export class ServerlessSecure {
             if (fse.pathExists(path)) {
                 return true;
             }
-            await fse.mkdir(path)
+            await fse.mkdir(path, (mkdirres) =>{
+                console.error({mkdirres})
+            })
+            await fse.opendir(path)
             return await fse.pathExists(path)
         } catch (err) {
             console.error(err)
@@ -104,7 +107,7 @@ export class ServerlessSecure {
 
     beforePath() {
         // this.setCredentials();
-        this.getRestFunctions();
+        ;
         if(this.findRequirements()){
             read(this.baseYAML)
             .then((res: any) => this.parseYAML(res))
@@ -117,7 +120,7 @@ export class ServerlessSecure {
 
     findRequirements() {
         if (!this.options.path && !this.options.p) {
-            console.log(`sls secure: No path set!!`, 'error')
+            this.notification(`sls secure: No path set!!`, 'error')
             return false;
         }
         if (!this.pathExists(this.secureLayer)) {
