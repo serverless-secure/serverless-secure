@@ -6,7 +6,6 @@ import * as unzip from 'unzip-stream';
 // import updateNotifier from 'update-notifier'
 import Serverless from 'serverless';
 import { read, write } from 'node-yaml'
-import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
 import { corsConfig } from './config';
@@ -107,10 +106,11 @@ export class ServerlessSecure {
 
     beforePath() {
         // this.setCredentials();
-        this.findYAML()
-        read(this.baseYAML)
+        if(this.findYAML()){
+            read(this.baseYAML)
             .then((res: any) => this.parseYAML(res))
             .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
+        }
     }
     afterPath() {
         this.serverless.cli.log('List of Secure Paths:');
@@ -118,11 +118,13 @@ export class ServerlessSecure {
 
     findYAML() {
         if (!this.options.path && !this.options.p) {
-            this.notification(`slsSecure: No path set!!`, 'error');
+            console.log(`sls secure: No path set!!`, 'error')
+            return false;
         }
-        if (!fs.existsSync(this.baseYAML)) {
+        if (!fse.existsSync(this.baseYAML)) {
             this.notification('Can not find base YAML file!', 'error')
         }
+        return true;
     };
 
     updateCustom(content: { [x: string]: any; }) {
