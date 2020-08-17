@@ -31,9 +31,9 @@ export class ServerlessSecure {
         this.options = options;
         this.serverless = serverless;
         this.hooks = {
-            'after:deploy:deploy': this.apply.bind(this),
-            'before:secure:path': this.beforePath.bind(this),
-            'after:secure:path': this.afterPath.bind(this)
+            'before:package:finalize': this.apply.bind(this),
+            'before:secure:create': this.beforePath.bind(this),
+            'after:secure:create': this.afterPath.bind(this)
             // 'before:slsSecure:path': this.beforePath.bind(this),
             // 'after:slsSecure:path': this.afterPath.bind(this)
             // 'create_sentinel_role:create': this.create_sentinel_role.bind(this),
