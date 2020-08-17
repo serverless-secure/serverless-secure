@@ -1,20 +1,21 @@
 import request from 'request';
 // @ts-ignore
-import pkg from '../package.json';
+// import pkg from '../../package.json';
 import * as fse from 'fs-extra';
 import * as unzip from 'unzip-stream';
-import updateNotifier from 'update-notifier'
+// import updateNotifier from 'update-notifier'
 import Serverless from 'serverless';
 import { read, write } from 'node-yaml'
 import * as fs from 'fs';
 import * as path from 'path';
 import * as _ from 'lodash';
 import { corsConfig } from './config';
-import { TEMP_PATH, ZIP_FILE , ZIP_URL} from './config';
+import { SEC_PATH, ZIP_FILE, ZIP_URL } from './config';
 
 // import {getAWSPagedResults, sleep, throttledCall} from "./utils";
 
 export class ServerlessSecure {
+    private secureLayer = path.join(__dirname + '../../../', SEC_PATH);
     private baseYAML = path.join(__dirname + '../../../', 'serverless.yml');
     // AWS SDK resources
     public apigateway: any;
@@ -23,17 +24,17 @@ export class ServerlessSecure {
     public acm: any;
     public acmRegion!: string;
     public cloudformation: any;
-    serverless: any;
+    serverless;
     commands: { secure: { usage: string; lifecycleEvents: string[]; options: { path: { usage: string; required: boolean; shortcut: string; }; }; }; }
     options: { path: any; p: any; }
-    hooks: { 'after:deploy:deploy': () => Promise<void>; 'before:secure:path': () => void; 'after:secure:path': () => void; }
+    hooks;
     constructor(serverless: Serverless, options?: any) {
         this.options = options;
         this.serverless = serverless;
         this.hooks = {
             'after:deploy:deploy': this.apply.bind(this),
-            'before:secure:path': this.beforePath.bind(this),
-            'after:secure:path': this.afterPath.bind(this)
+            // 'before:secure:path': this.beforePath.bind(this),
+            // 'after:secure:path': this.afterPath.bind(this)
             // 'before:slsSecure:path': this.beforePath.bind(this),
             // 'after:slsSecure:path': this.afterPath.bind(this)
             // 'create_sentinel_role:create': this.create_sentinel_role.bind(this),
@@ -55,37 +56,53 @@ export class ServerlessSecure {
                 }
             }
         }
+        this.getRestFunctions();
     }
 
     setCredentials() {
-        let pluginsDirectory = this.serverless.getProject().getRootPath('plugins');
-        console.log({pluginsDirectory})
-        // let pluginDirectory = path.join(pluginsDirectory, pluginName);
-        const credentials = this.serverless.providers.aws.getCredentials();
-        credentials.region = this.serverless.providers.aws.getRegion();
-        this.apigateway = new this.serverless.providers.aws.sdk.APIGateway(credentials);
-        this.apigatewayV2 = new this.serverless.providers.aws.sdk.ApiGatewayV2(credentials);
-        this.route53 = new this.serverless.providers.aws.sdk.Route53(credentials);
-        this.cloudformation = new this.serverless.providers.aws.sdk.CloudFormation(credentials);
-        console.log('credentials', credentials, this.apigateway, this.cloudformation)
+        // let pluginsDirectory = this.serverless.getProject().getRootPath('plugins');
+        // console.log({pluginsDirectory})
+        // // let pluginDirectory = path.join(pluginsDirectory, pluginName);
+        // const credentials = this.serverless.providers.aws.getCredentials();
+        // credentials.region = this.serverless.providers.aws.getRegion();
+        // this.apigateway = new this.serverless.providers.aws.sdk.APIGateway(credentials);
+        // this.apigatewayV2 = new this.serverless.providers.aws.sdk.ApiGatewayV2(credentials);
+        // this.route53 = new this.serverless.providers.aws.sdk.Route53(credentials);
+        // this.cloudformation = new this.serverless.providers.aws.sdk.CloudFormation(credentials);
+        // console.log('credentials', credentials, this.apigateway, this.cloudformation)
 
     }
     static parseHttpPath(path: string) {
         return path[0] === '/' ? path : `/${path}`;
     }
+    async pathExists(path: string): Promise<boolean> {
+        try {
+            if (fse.pathExists(path)) {
+                return true;
+            }
+            await fse.mkdir(path)
+            return await fse.pathExists(path)
+        } catch (err) {
+            console.error(err)
+        }
+    }
     async apply() {
         // check if update is available
-        updateNotifier({ pkg }).notify()
-        this.serverless.cli.log('[Concurrence]: Applying plugin...');
-        this.getRestFunctions();
+        // updateNotifier({ pkg }).notify();
+        console.log('Test')
+        await this.notification('[Concurrence]: Applying plugin...', 'success');
+
+
     }
 
     getRestFunctions() {
+        this.pathExists(this.secureLayer)
         const allFunctions = this.serverless.service.getAllFunctions();
 
         if (!allFunctions.length) {
             this.notification(`slsSecure: No functions found!!`, 'error');
         }
+        this.beforePath()
     }
 
     beforePath() {
@@ -108,32 +125,32 @@ export class ServerlessSecure {
         }
     };
 
-    updateCustom(content: { [x: string]: any; }){
-       return _.assign({}, content['custom'], corsConfig);
+    updateCustom(content: { [x: string]: any; }) {
+        return _.assign({}, content['custom'], corsConfig);
     }
-    updateProvider(content: { provider: any; }){
+    updateProvider(content: { provider: any; }) {
         const { provider } = content;
-        if( provider && 'apiKeys' in provider){
+        if (provider && 'apiKeys' in provider) {
             provider['apiKeys'].push('slsSecure')
         } else {
             return ['slsSecure'];
         }
         return _.uniq(provider['apiKeys']);
-     }
+    }
     async parseYAML(_content: any) {
-       
+
         const content = _content;
         content['custom'] = this.updateCustom(content);
         content['provider']['apiKeys'] = this.updateProvider(content);
         const opath = this.options.path || this.options.p
         for (const item in content['functions']) {
-            
+
             if (opath === '.' || opath === item) {
                 const events = content['functions'][item]['events'] || [];
                 await events.map((res: any) => {
                     if (res && 'http' in res) {
                         res.http['cors'] = '${self:custom.corsValue}';
-                        if (!res['private'] || res['private']!==true){
+                        if (!res['private'] || res['private'] !== true) {
                             res.http['authorizer'] = 'secureAuthorizer';
                         }
                     }
@@ -148,8 +165,8 @@ export class ServerlessSecure {
         await write(this.baseYAML, content)
             .then(this.serverless.cli.log('YAML File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))
-            this.downloadSecureLayer();
-       
+        this.downloadSecureLayer();
+
     };
 
     downloadSecureLayer() {
@@ -158,8 +175,8 @@ export class ServerlessSecure {
             request
                 .get(ZIP_URL)
                 .on('error', (error) => this.notification(error.message, 'error'))
-                .pipe(fse.createWriteStream(ZIP_FILE))
-                .on('finish', ()=> that.unZipPackage(ZIP_FILE, TEMP_PATH));
+                .pipe(fse.createWriteStream(`${this.secureLayer}/${ZIP_FILE}`))
+                .on('finish', () => that.unZipPackage(`${this.secureLayer}/${ZIP_FILE}`, this.secureLayer));
         } catch (err) {
             console.error(err)
         }
@@ -170,7 +187,9 @@ export class ServerlessSecure {
             const readStream = fse.createReadStream(extractPath);
             const writeStream = unzip.Extract({ path });
             await readStream.pipe(writeStream);
-            setTimeout(() => this.deleteFile(`${path}handler.js.map`), 1000);
+            setTimeout(() => this.deleteFile(`${this.secureLayer}/handler.js.map`), 1000);
+            setTimeout(() => this.deleteFile(`${this.secureLayer}/${ZIP_FILE}`), 1000);
+
             this.notification('Secure layer applied..', 'success')
         } catch (err) {
             this.notification(err.message, 'error')
@@ -179,7 +198,7 @@ export class ServerlessSecure {
     async deleteFile(extractPath: string): Promise<void> {
         try {
             await fse.remove(extractPath);
-            this.notification('Secure .map removed..', 'success')
+            this.notification(`File: ${extractPath} cleaned..`, 'success')
         } catch (err) {
             this.notification(err.message, 'error')
         }

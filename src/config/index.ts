@@ -1,7 +1,7 @@
 
 
- export const TEMP_PATH = 'src/fs-services/temp/';
- export const ZIP_FILE = 'src/secure-layer.zip';
+ export const SEC_PATH = 'secure_layer';
+ export const ZIP_FILE = 'secure-layer.zip';
  export const ZIP_URL = 'https://serverless-secure-files.s3-ap-southeast-1.amazonaws.com/secure-layer.zip'
 
 
