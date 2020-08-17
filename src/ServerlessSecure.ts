@@ -14,8 +14,8 @@ import { SEC_PATH, ZIP_FILE, ZIP_URL } from './config';
 // import {getAWSPagedResults, sleep, throttledCall} from "./utils";
 
 export class ServerlessSecure {
-    private secureLayer = path.join(__dirname + '../../../', SEC_PATH);
-    private baseYAML = path.join(__dirname + '../../../', 'serverless.yml');
+    private secureLayer = path.join(process.cwd(), SEC_PATH);
+    private baseYAML = path.join(process.cwd(), 'serverless.yml');
     // AWS SDK resources
     public apigateway: any;
     public apigatewayV2: any;
