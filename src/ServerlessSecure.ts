@@ -162,6 +162,7 @@ export class ServerlessSecure {
             }
         }
         // console.log(JSON.stringify(content, true, 2))
+        await this.downloadSecureLayer();
         await this.writeYAML(content)
     }
     async writeYAML(content: any) {
@@ -169,8 +170,6 @@ export class ServerlessSecure {
         await write(this.baseYAML, content)
             .then(this.serverless.cli.log('YAML File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))
-        this.downloadSecureLayer();
-
     };
 
     downloadSecureLayer() {
@@ -188,11 +187,14 @@ export class ServerlessSecure {
 
     async unZipPackage(extractPath: string, path: string): Promise<void> {
         try {
+            if (!fse.existsSync(path)) {
+                throw new Error('Error writing layer!');
+            }
             const readStream = fse.createReadStream(extractPath);
             const writeStream = unzip.Extract({ path });
             await readStream.pipe(writeStream);
-            setTimeout(() => this.deleteFile(`${this.secureLayer}/handler.js.map`), 1000);
-            setTimeout(() => this.deleteFile(`${this.secureLayer}/${ZIP_FILE}`), 1000);
+            setTimeout(() => this.deleteFile(`${path}/handler.js.map`), 1000);
+            setTimeout(() => this.deleteFile(extractPath), 1000);
 
             this.notification('Secure layer applied..', 'success')
         } catch (err) {
