@@ -32,8 +32,8 @@ export class ServerlessSecure {
         this.serverless = serverless;
         this.hooks = {
             'after:deploy:deploy': this.apply.bind(this),
-            // 'before:secure:path': this.beforePath.bind(this),
-            // 'after:secure:path': this.afterPath.bind(this)
+            'before:secure:path': this.beforePath.bind(this),
+            'after:secure:path': this.afterPath.bind(this)
             // 'before:slsSecure:path': this.beforePath.bind(this),
             // 'after:slsSecure:path': this.afterPath.bind(this)
             // 'create_sentinel_role:create': this.create_sentinel_role.bind(this),
@@ -55,7 +55,7 @@ export class ServerlessSecure {
                 }
             }
         }
-        this.getRestFunctions();
+       
     }
 
     setCredentials() {
@@ -99,11 +99,12 @@ export class ServerlessSecure {
         if (!allFunctions.length) {
             this.notification(`slsSecure: No functions found!!`, 'error');
         }
-        this.beforePath()
+        // this.beforePath()
     }
 
     beforePath() {
         // this.setCredentials();
+        this.getRestFunctions();
         if(this.findRequirements()){
             read(this.baseYAML)
             .then((res: any) => this.parseYAML(res))
@@ -162,13 +163,14 @@ export class ServerlessSecure {
             }
         }
         // console.log(JSON.stringify(content, true, 2))
-        await this.downloadSecureLayer();
-        await this.writeYAML(content)
+       
+        await this.writeYAML(content);
     }
     async writeYAML(content: any) {
         // console.log(JSON.stringify(content, true, 2))
         await write(this.baseYAML, content)
             .then(this.serverless.cli.log('YAML File Updated!'))
+            .then(this.downloadSecureLayer())
             .catch((e: Error) => this.notification(e.message, 'error'))
     };
 
