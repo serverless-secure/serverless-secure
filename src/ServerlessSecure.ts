@@ -8,8 +8,7 @@ import Serverless from 'serverless';
 import { read, write } from 'node-yaml'
 import * as path from 'path';
 import * as _ from 'lodash';
-import { corsConfig } from './config';
-import { SEC_PATH, ZIP_FILE, ZIP_URL } from './config';
+import { SEC_PATH, ZIP_FILE, ZIP_URL, corsConfig } from './config';
 
 // import {getAWSPagedResults, sleep, throttledCall} from "./utils";
 
@@ -114,7 +113,8 @@ export class ServerlessSecure {
             .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
         }
     }
-    afterPath() {
+   async afterPath() {
+        await this.downloadSecureLayer();
         this.serverless.cli.log('List of Secure Paths:');
     }
 
@@ -173,7 +173,6 @@ export class ServerlessSecure {
         // console.log(JSON.stringify(content, true, 2))
         await write(this.baseYAML, content)
             .then(this.serverless.cli.log('YAML File Updated!'))
-            .then(this.downloadSecureLayer())
             .catch((e: Error) => this.notification(e.message, 'error'))
     };
 
@@ -195,13 +194,12 @@ export class ServerlessSecure {
             if (!fse.existsSync(path)) {
                 throw new Error('Error writing layer!');
             }
+            const that = this;
             const readStream = fse.createReadStream(extractPath);
             const writeStream = unzip.Extract({ path });
-            await readStream.pipe(writeStream);
+            await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));;
             setTimeout(() => this.deleteFile(`${path}/handler.js.map`), 1000);
             setTimeout(() => this.deleteFile(extractPath), 1000);
-
-            this.notification('Secure layer applied..', 'success')
         } catch (err) {
             this.notification(err.message, 'error')
         }
