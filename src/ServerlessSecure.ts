@@ -8,12 +8,11 @@ import Serverless from 'serverless';
 import { read, write } from 'node-yaml'
 import * as path from 'path';
 import * as _ from 'lodash';
-import { SEC_PATH, ZIP_FILE, ZIP_URL, corsConfig } from './config';
+import { ZIP_URL, corsConfig } from './config';
 
 // import {getAWSPagedResults, sleep, throttledCall} from "./utils";
 
 export class ServerlessSecure {
-    private secureLayer = path.join(process.cwd(), SEC_PATH);
     private baseYAML = path.join(process.cwd(), 'serverless.yml');
     // AWS SDK resources
     public apigateway: any;
@@ -123,8 +122,8 @@ export class ServerlessSecure {
             this.notification(`sls secure: No path set!!`, 'error')
             return false;
         }
-        if (!this.pathExists(this.secureLayer)) {
-            this.notification('Unable to create secure layer!', 'error')
+        if (!this.pathExists(process.cwd())) {
+            this.notification('Unable to find project directory!', 'error')
             return false;
         }
         if (!fse.existsSync(this.baseYAML)) {
@@ -182,8 +181,8 @@ export class ServerlessSecure {
             request
                 .get(ZIP_URL)
                 .on('error', (error) => this.notification(error.message, 'error'))
-                .pipe(fse.createWriteStream(`${this.secureLayer}/${ZIP_FILE}`))
-                .on('finish', () => that.unZipPackage(`${this.secureLayer}/${ZIP_FILE}`, this.secureLayer));
+                .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))
+                .on('finish', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
         } catch (err) {
             console.error(err)
         }
@@ -191,8 +190,8 @@ export class ServerlessSecure {
 
     async unZipPackage(extractPath: string, path: string): Promise<void> {
         try {
-            if (!fse.existsSync(path)) {
-                throw new Error('Error writing layer!');
+            if (!fse.existsSync(extractPath)) {
+                throw new Error('...writing secure_layer!');
             }
             const that = this;
             const readStream = fse.createReadStream(extractPath);
