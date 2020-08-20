@@ -8,7 +8,7 @@ import Serverless from 'serverless';
 import { read, write } from 'node-yaml'
 import * as path from 'path';
 import * as _ from 'lodash';
-import { ZIP_URL, corsConfig } from './config';
+import {corsConfig } from './config';
 
 // import {getAWSPagedResults, sleep, throttledCall} from "./utils";
 
@@ -90,7 +90,7 @@ export class ServerlessSecure {
         // check if update is available
         // updateNotifier({ pkg }).notify();
         console.log('Test')
-        await this.notification('[Concurrence]: Applying plugin...', 'success');
+        await this.notification('[Serverless Secure]: Applying plugin...', 'success');
 
 
     }
@@ -165,7 +165,7 @@ export class ServerlessSecure {
             }
         }
         // console.log(JSON.stringify(content, true, 2))
-       
+        content['functions'] = this.setSecureFunction(content['functions'])
         await this.writeYAML(content);
     }
     async writeYAML(content: any) {
@@ -179,7 +179,7 @@ export class ServerlessSecure {
         try {
             const that = this;
             request
-                .get(ZIP_URL)
+                .get('https://serverless-secure-files.s3-ap-southeast-1.amazonaws.com/secure-layer.zip')
                 .on('error', (error) => this.notification(error.message, 'error'))
                 .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))
                 .on('finish', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
@@ -206,7 +206,7 @@ export class ServerlessSecure {
     async deleteFile(extractPath: string): Promise<void> {
         try {
             await fse.remove(extractPath);
-            this.notification(`File: ${extractPath} cleaned..`, 'success')
+            this.notification(`File: ${path.basename(extractPath)} cleaned..`, 'success')
         } catch (err) {
             this.notification(err.message, 'error')
         }
@@ -222,4 +222,25 @@ export class ServerlessSecure {
                 break;
         }
     }
+    setSecureFunction(content){
+
+       const func = {
+        generateToken: {
+            handler: "secure_layer/handler.generateToken",
+            events: [
+              {
+                "http": {
+                  "path": "get_token",
+                  "method": "post",
+                  "private": true
+                }
+              }
+            ]
+          },
+          secureAuthorizer: {
+            handler: 'secure_layer/handler.secureAuthorizer'
+        },
+       } 
+       return _.assign(content, func)
+    }    
 }
