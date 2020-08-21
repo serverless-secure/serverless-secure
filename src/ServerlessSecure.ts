@@ -8,11 +8,12 @@ import Serverless from 'serverless';
 import { read, write } from 'node-yaml'
 import * as path from 'path';
 import * as _ from 'lodash';
-import {corsConfig } from './config';
+import stringifyObject from 'stringify-object';
+import { ZIP_URL, corsConfig, secureConfig } from './config';
 
-// import {getAWSPagedResults, sleep, throttledCall} from "./utils";
 
 export class ServerlessSecure {
+    private baseTS = path.join(process.cwd(), 'serverless.ts');
     private baseYAML = path.join(process.cwd(), 'serverless.yml');
     // AWS SDK resources
     public apigateway: any;
@@ -25,7 +26,7 @@ export class ServerlessSecure {
     commands: { secure: { usage: string; lifecycleEvents: string[]; options: { path: { usage: string; required: boolean; shortcut: string; }; }; }; }
     options: { path: any; p: any; }
     hooks: { 'before:package:finalize': any; 'before:secure:create': any; 'after:secure:create': any; };
-    constructor(serverless: Serverless, options?: any) {
+    constructor(serverless?: Serverless, options?: any) {
         this.options = options;
         this.serverless = serverless;
         this.hooks = {
@@ -53,7 +54,9 @@ export class ServerlessSecure {
                 }
             }
         }
-       
+        // let getProject = this.serverless.service.getAllFunctions()
+        // // @ts-ignore
+        // console.log(JSON.stringify(getProject, true, 2))
     }
 
     setCredentials() {
@@ -77,8 +80,8 @@ export class ServerlessSecure {
             if (fse.pathExists(path)) {
                 return true;
             }
-            await fse.mkdir(path, (mkdirres) =>{
-                console.error({mkdirres})
+            await fse.mkdir(path, (mkdirres) => {
+                console.error({ mkdirres })
             })
             await fse.opendir(path)
             return await fse.pathExists(path)
@@ -90,7 +93,7 @@ export class ServerlessSecure {
         // check if update is available
         // updateNotifier({ pkg }).notify();
         console.log('Test')
-        await this.notification('[Serverless Secure]: Applying plugin...', 'success');
+        await this.notification('[Concurrence]: Applying plugin...', 'success');
 
 
     }
@@ -104,15 +107,18 @@ export class ServerlessSecure {
     }
 
     beforePath() {
-        // this.setCredentials();
-        ;
-        if(this.findRequirements()){
+
+        this.findRequirements();
+        if (fse.existsSync(this.baseYAML)) {
             read(this.baseYAML)
-            .then((res: any) => this.parseYAML(res))
-            .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
+                .then((res: any) => this.parseYAML(res, true))
+                .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
+        }
+        if (fse.existsSync(this.baseTS)) {
+            this.parseTS()
         }
     }
-   async afterPath() {
+    async afterPath() {
         await this.downloadSecureLayer();
         this.serverless.cli.log('List of Secure Paths:');
     }
@@ -126,9 +132,7 @@ export class ServerlessSecure {
             this.notification('Unable to find project directory!', 'error')
             return false;
         }
-        if (!fse.existsSync(this.baseYAML)) {
-            this.notification('Can not find base YAML file!', 'error')
-        }
+
         return true;
     };
 
@@ -144,14 +148,51 @@ export class ServerlessSecure {
         }
         return _.uniq(provider['apiKeys']);
     }
-    async parseYAML(_content: any) {
+    updateFunctions(content){
+        return _.assign({}, content['functions'], secureConfig);
+    }
+    async parseTS() {
+        let open;
+        let close;
+        let utfArray = [];
+        try {
+            await fse.readFile(this.baseTS, 'utf-8', async (err, data) => {
+                if (err)
+                    return;
+                const serverlessConfiguration = require(path.join(process.cwd(), 'serverless.ts')) ;
+                const updatedConfig: any = await this.parseYAML(serverlessConfiguration);
+                const NewConfig = stringifyObject(updatedConfig, {
+                    indent: '   ',
+                    singleQuotes: false
+                }).substring(1);
+                let fileArray: any = data.split('\n');
+                fileArray.forEach((dataArr, x) => {
+                    let lArray = dataArr.split('');
+                    if (lArray.includes('=') && lArray.includes('{')) {
+                        open = x
+                    }
+                    if (lArray.includes('}')) {
+                        close = x
+                    }
+                });
+                utfArray.push(
+                    this.parseFile(fileArray, 0, open + 1).join('\n'),
+                    NewConfig + '\n',
+                    this.parseFile(fileArray, close + 1, fileArray.length + 1).join('\n')
+                    );
+                fse.writeFile(this.baseTS, utfArray.join(''), 'utf-8');
+            });
+        } catch (error) {
+            this.notification(error.message, 'error')
+        }
 
-        const content = _content;
-        content['custom'] = this.updateCustom(content);
-        content['provider']['apiKeys'] = this.updateProvider(content);
+    }
+    async parseYAML(_content: any, isYML = false) {
+        const content = {..._content};
+        content['custom'] = await this.updateCustom(content);
+        content['provider']['apiKeys'] = await this.updateProvider(content);
         const opath = this.options.path || this.options.p
         for (const item in content['functions']) {
-
             if (opath === '.' || opath === item) {
                 const events = content['functions'][item]['events'] || [];
                 await events.map((res: any) => {
@@ -164,9 +205,14 @@ export class ServerlessSecure {
                 })
             }
         }
+        if('functions' in content){
+            content['functions'] = await this.updateFunctions(content);
+        }
         // console.log(JSON.stringify(content, true, 2))
-        content['functions'] = this.setSecureFunction(content['functions'])
-        await this.writeYAML(content);
+        if(isYML){
+            await this.writeYAML(content)
+        }
+        return content;
     }
     async writeYAML(content: any) {
         // console.log(JSON.stringify(content, true, 2))
@@ -175,11 +221,11 @@ export class ServerlessSecure {
             .catch((e: Error) => this.notification(e.message, 'error'))
     };
 
-    downloadSecureLayer() {
+    async downloadSecureLayer() {
         try {
             const that = this;
-            request
-                .get('https://serverless-secure-files.s3-ap-southeast-1.amazonaws.com/secure-layer.zip')
+            await request
+                .get(ZIP_URL)
                 .on('error', (error) => this.notification(error.message, 'error'))
                 .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))
                 .on('finish', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
@@ -197,7 +243,7 @@ export class ServerlessSecure {
             const readStream = fse.createReadStream(extractPath);
             const writeStream = unzip.Extract({ path });
             await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));;
-            setTimeout(() => this.deleteFile(`${path}handler.js.map`), 1000);
+            // setTimeout(() => this.deleteFile(`${path}handler.js.map`), 1000);
             setTimeout(() => this.deleteFile(extractPath), 1000);
         } catch (err) {
             this.notification(err.message, 'error')
@@ -222,25 +268,7 @@ export class ServerlessSecure {
                 break;
         }
     }
-    setSecureFunction(content){
-
-       const func = {
-        generateToken: {
-            handler: "secure_layer/handler.generateToken",
-            events: [
-              {
-                "http": {
-                  "path": "get_token",
-                  "method": "post",
-                  "private": true
-                }
-              }
-            ]
-          },
-          secureAuthorizer: {
-            handler: 'secure_layer/handler.secureAuthorizer'
-        },
-       } 
-       return _.assign(content, func)
-    }    
+    parseFile(arr, top, bot) {
+        return JSON.parse(JSON.stringify(_.slice(arr, top, bot)));
+    }
 }
