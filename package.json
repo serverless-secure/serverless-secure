@@ -12,8 +12,7 @@
     "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "deploy:local": "npm run build && npm link",
-    "develop": "tsc-watch --project tsconfig.json",
-    "postinstall": "npm run build:package"
+    "develop": "tsc-watch --project tsconfig.json"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
