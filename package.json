@@ -8,7 +8,7 @@
     "test": "jest --coverage",
     "deploy:local": "npm run build && npm link",
     "develop": "tsc-watch --project tsconfig.json",
-    "postinstall": "npm i && npm run build"
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
