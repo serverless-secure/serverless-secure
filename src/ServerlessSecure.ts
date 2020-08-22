@@ -9,8 +9,7 @@ import { read, write } from 'node-yaml'
 import * as path from 'path';
 import * as _ from 'lodash';
 import stringifyObject from 'stringify-object';
-import { ZIP_URL, corsConfig, secureConfig } from './config';
-
+import { ZIP_URL, corsConfig, secureConfig, secureLayer } from './config';
 
 export class ServerlessSecure {
     private baseTS = path.join(process.cwd(), 'serverless.ts');
@@ -93,7 +92,7 @@ export class ServerlessSecure {
         // check if update is available
         // updateNotifier({ pkg }).notify();
         console.log('Test')
-        await this.notification('[Concurrence]: Applying plugin...', 'success');
+        await this.notification('[Serverles-Secure]: Applying plugin...', 'success');
 
 
     }
@@ -148,6 +147,9 @@ export class ServerlessSecure {
         }
         return _.uniq(provider['apiKeys']);
     }
+    updateLayers(content){
+        return _.assign({}, content['layers'], secureLayer);
+    }
     updateFunctions(content){
         return _.assign({}, content['functions'], secureConfig);
     }
@@ -195,6 +197,7 @@ export class ServerlessSecure {
         for (const item in content['functions']) {
             if (opath === '.' || opath === item) {
                 const events = content['functions'][item]['events'] || [];
+                delete content['functions'][item]['events']['name'];
                 await events.map((res: any) => {
                     if (res && 'http' in res) {
                         res.http['cors'] = '${self:custom.corsValue}';
@@ -205,10 +208,18 @@ export class ServerlessSecure {
                 })
             }
         }
+        if('layers' in content){
+            content['layers'] = await this.updateLayers(content);
+        }
         if('functions' in content){
             content['functions'] = await this.updateFunctions(content);
         }
-        // console.log(JSON.stringify(content, true, 2))
+        if('variableSyntax' in content['provider']){
+            delete content.provider.variableSyntax;
+            content.configValidationMode;
+        }
+        // @ts-ignore
+        console.log(JSON.stringify(content, true, 2))
         if(isYML){
             await this.writeYAML(content)
         }
@@ -243,7 +254,7 @@ export class ServerlessSecure {
             const readStream = fse.createReadStream(extractPath);
             const writeStream = unzip.Extract({ path });
             await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));;
-            // setTimeout(() => this.deleteFile(`${path}handler.js.map`), 1000);
+            setTimeout(() => this.deleteFile(`${path}handler.js.map`), 1000);
             setTimeout(() => this.deleteFile(extractPath), 1000);
         } catch (err) {
             this.notification(err.message, 'error')
