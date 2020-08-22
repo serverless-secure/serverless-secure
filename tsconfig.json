@@ -7,7 +7,7 @@
     "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "target": "es5",
     "module": "commonjs",
     "outDir": "dist",
