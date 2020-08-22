@@ -4,10 +4,11 @@
   "description": "Lambda Secure Serverless Services",
   "main": "dist/index.js",
   "scripts": {
+    "pretest": "npm i",
+    "test": "jest --coverage",
     "build": "tsc --project tsconfig.json",
     "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
     "lint": "tslint --project ./tsconfig.json 'src/**/*.{ts,tsx}'",
-    "test": "jest --coverage",
     "deploy:local": "npm run build && npm link",
     "develop": "tsc-watch --project tsconfig.json",
     "postinstall": "npm run build:package"
