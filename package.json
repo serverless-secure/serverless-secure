@@ -4,7 +4,7 @@
   "description": "Lambda Secure Serverless Services",
   "main": "dist/index.js",
   "scripts": {
-    "pretest": "npm i",
+    "prepare": "npm i",
     "test": "jest --coverage",
     "build": "tsc --project tsconfig.json",
     "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
