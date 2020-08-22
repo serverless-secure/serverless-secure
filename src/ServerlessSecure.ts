@@ -71,19 +71,17 @@ export class ServerlessSecure {
         // console.log('credentials', credentials, this.apigateway, this.cloudformation)
 
     }
-    static parseHttpPath(path: string) {
-        return path[0] === '/' ? path : `/${path}`;
+    static parseHttpPath(_path: string) {
+        return _path[0] === '/' ? _path : `/${_path}`;
     }
-    async pathExists(path: string): Promise<boolean> {
+    async pathExists(_path: string): Promise<boolean> {
         try {
-            if (fse.pathExists(path)) {
+            if (fse.pathExists(_path)) {
                 return true;
             }
-            await fse.mkdir(path, (mkdirres) => {
-                console.error({ mkdirres })
-            })
-            await fse.opendir(path)
-            return await fse.pathExists(path)
+            await fse.mkdir(_path, (mkdirres) => console.error({ mkdirres }))
+            await fse.opendir(_path)
+            return await fse.pathExists(_path)
         } catch (err) {
             console.error(err)
         }
@@ -156,7 +154,7 @@ export class ServerlessSecure {
     async parseTS() {
         let open;
         let close;
-        let utfArray = [];
+        const utfArray = [];
         try {
             await fse.readFile(this.baseTS, 'utf-8', async (err, data) => {
                 if (err)
@@ -167,9 +165,9 @@ export class ServerlessSecure {
                     indent: '   ',
                     singleQuotes: false
                 }).substring(1);
-                let fileArray: any = data.split('\n');
+                const fileArray: any = data.split('\n');
                 fileArray.forEach((dataArr, x) => {
-                    let lArray = dataArr.split('');
+                    const lArray = dataArr.split('');
                     if (lArray.includes('=') && lArray.includes('{')) {
                         open = x
                     }
