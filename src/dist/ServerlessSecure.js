@@ -10,25 +10,6 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -65,20 +46,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.ServerlessSecure = void 0;
-var request_1 = __importDefault(require("request"));
-var fse = __importStar(require("fs-extra"));
-var unzip = __importStar(require("unzip-stream"));
+var request_1 = require("request");
+// @ts-ignore
+// import pkg from '../../package.json';
+var fse = require("fs-extra");
+var unzip = require("unzip-stream");
 var node_yaml_1 = require("node-yaml");
-var path = __importStar(require("path"));
-var _ = __importStar(require("lodash"));
-var stringify_object_1 = __importDefault(require("stringify-object"));
+var path = require("path");
+var _ = require("lodash");
+var stringify_object_1 = require("stringify-object");
 var config_1 = require("./config");
-var ServerlessSecure = (function () {
+var ServerlessSecure = /** @class */ (function () {
     function ServerlessSecure(serverless, options) {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
@@ -97,8 +77,8 @@ var ServerlessSecure = (function () {
                     path: {
                         usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
                         required: true,
-                        shortcut: 'p',
-                    },
+                        shortcut: 'p'
+                    }
                 }
             }
         };
@@ -107,28 +87,28 @@ var ServerlessSecure = (function () {
         return _path[0] === '/' ? _path : "/" + _path;
     };
     ServerlessSecure.prototype.pathExists = function (_path) {
-        return __awaiter(this, void 0, void 0, function () {
+        return __awaiter(this, void 0, Promise, function () {
             var err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 4, , 5]);
                         if (fse.pathExists(_path)) {
-                            return [2, true];
+                            return [2 /*return*/, true];
                         }
-                        return [4, fse.mkdir(_path, function (mkdirres) { return console.error({ mkdirres: mkdirres }); })];
+                        return [4 /*yield*/, fse.mkdir(_path, function (mkdirres) { return console.error({ mkdirres: mkdirres }); })];
                     case 1:
                         _a.sent();
-                        return [4, fse.opendir(_path)];
+                        return [4 /*yield*/, fse.opendir(_path)];
                     case 2:
                         _a.sent();
-                        return [4, fse.pathExists(_path)];
-                    case 3: return [2, _a.sent()];
+                        return [4 /*yield*/, fse.pathExists(_path)];
+                    case 3: return [2 /*return*/, _a.sent()];
                     case 4:
                         err_1 = _a.sent();
                         console.error(err_1);
-                        return [3, 5];
-                    case 5: return [2];
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
@@ -138,11 +118,13 @@ var ServerlessSecure = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        // check if update is available
+                        // updateNotifier({ pkg }).notify();
                         console.log('Test');
-                        return [4, this.notification('[Serverles-Secure]: Applying plugin...', 'success')];
+                        return [4 /*yield*/, this.notification('[Serverles-Secure]: Applying plugin...', 'success')];
                     case 1:
                         _a.sent();
-                        return [2];
+                        return [2 /*return*/];
                 }
             });
         });
@@ -152,6 +134,7 @@ var ServerlessSecure = (function () {
         if (!allFunctions.length) {
             this.notification("slsSecure: No functions found!!", 'error');
         }
+        // this.beforePath()
     };
     ServerlessSecure.prototype.beforePath = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -160,15 +143,14 @@ var ServerlessSecure = (function () {
                 switch (_a.label) {
                     case 0:
                         this.findRequirements();
-                        if (!fse.existsSync(this.baseYAML)) return [3, 2];
-                        return [4, node_yaml_1.read(this.baseYAML)
+                        if (!fse.existsSync(this.baseYAML)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, node_yaml_1.read(this.baseYAML)
                                 .then(function (res) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4, this.parseYAML(res, true)];
-                                    case 1: return [2, _a.sent()];
+                                    case 0: return [4 /*yield*/, this.parseYAML(res, true)];
+                                    case 1: return [2 /*return*/, _a.sent()];
                                 }
-                            }); }); })
-                                .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
+                            }); }); })["catch"](function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
                     case 1:
                         _a.sent();
                         _a.label = 2;
@@ -176,7 +158,7 @@ var ServerlessSecure = (function () {
                         if (fse.existsSync(this.baseTS)) {
                             this.parseTS();
                         }
-                        return [2];
+                        return [2 /*return*/];
                 }
             });
         });
@@ -185,11 +167,11 @@ var ServerlessSecure = (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.downloadSecureLayer()];
+                    case 0: return [4 /*yield*/, this.downloadSecureLayer()];
                     case 1:
                         _a.sent();
                         this.serverless.cli.log('List of Secure Paths:');
-                        return [2];
+                        return [2 /*return*/];
                 }
             });
         });
@@ -236,18 +218,19 @@ var ServerlessSecure = (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4, fse.readFile(this.baseTS, 'utf-8', function (err, data) { return __awaiter(_this, void 0, void 0, function () {
+                        // tslint:disable-next-line: no-invalid-await
+                        return [4 /*yield*/, fse.readFile(this.baseTS, 'utf-8', function (err, data) { return __awaiter(_this, void 0, void 0, function () {
                                 var serverlessConfiguration, updatedConfig, NewConfig, fileArray;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
                                         case 0:
                                             if (err)
-                                                return [2];
+                                                return [2 /*return*/];
                                             serverlessConfiguration = require(path.join(process.cwd(), 'serverless.ts'));
-                                            return [4, this.parseYAML(serverlessConfiguration)];
+                                            return [4 /*yield*/, this.parseYAML(serverlessConfiguration)];
                                         case 1:
                                             updatedConfig = _a.sent();
-                                            NewConfig = stringify_object_1.default(updatedConfig, {
+                                            NewConfig = stringify_object_1["default"](updatedConfig, {
                                                 indent: '   ',
                                                 singleQuotes: false
                                             }).substring(1);
@@ -263,18 +246,19 @@ var ServerlessSecure = (function () {
                                             });
                                             utfArray.push(this.parseFile(fileArray, 0, open + 1).join('\n'), NewConfig + '\n', this.parseFile(fileArray, close + 1, fileArray.length + 1).join('\n'));
                                             fse.writeFile(this.baseTS, utfArray.join(''), 'utf-8');
-                                            return [2];
+                                            return [2 /*return*/];
                                     }
                                 });
                             }); })];
                     case 2:
+                        // tslint:disable-next-line: no-invalid-await
                         _a.sent();
-                        return [3, 4];
+                        return [3 /*break*/, 4];
                     case 3:
                         error_1 = _a.sent();
                         this.notification(error_1.message, 'error');
-                        return [3, 4];
-                    case 4: return [2];
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -287,17 +271,17 @@ var ServerlessSecure = (function () {
                 switch (_l.label) {
                     case 0:
                         if (!_content) {
-                            return [2];
+                            return [2 /*return*/];
                         }
                         content = __assign({}, _content);
                         _a = content;
                         _b = 'custom';
-                        return [4, this.updateCustom(content)];
+                        return [4 /*yield*/, this.updateCustom(content)];
                     case 1:
                         _a[_b] = _l.sent();
                         _c = content['provider'];
                         _d = 'apiKeys';
-                        return [4, this.updateProvider(content)];
+                        return [4 /*yield*/, this.updateProvider(content)];
                     case 2:
                         _c[_d] = _l.sent();
                         opath = this.options.path || this.options.p;
@@ -307,12 +291,12 @@ var ServerlessSecure = (function () {
                         _i = 0;
                         _l.label = 3;
                     case 3:
-                        if (!(_i < _e.length)) return [3, 6];
+                        if (!(_i < _e.length)) return [3 /*break*/, 6];
                         item = _e[_i];
-                        if (!(opath === '.' || opath === item)) return [3, 5];
+                        if (!(opath === '.' || opath === item)) return [3 /*break*/, 5];
                         events = content['functions'][item]['events'] || [];
                         delete content['functions'][item]['events']['name'];
-                        return [4, events.map(function (res) {
+                        return [4 /*yield*/, events.map(function (res) {
                                 if (res && 'http' in res) {
                                     res.http['cors'] = '${self:custom.corsValue}';
                                     if (!res['private'] || res['private'] !== true) {
@@ -325,20 +309,20 @@ var ServerlessSecure = (function () {
                         _l.label = 5;
                     case 5:
                         _i++;
-                        return [3, 3];
+                        return [3 /*break*/, 3];
                     case 6:
-                        if (!('layers' in content)) return [3, 8];
+                        if (!('layers' in content)) return [3 /*break*/, 8];
                         _g = content;
                         _h = 'layers';
-                        return [4, this.updateLayers(content)];
+                        return [4 /*yield*/, this.updateLayers(content)];
                     case 7:
                         _g[_h] = _l.sent();
                         _l.label = 8;
                     case 8:
-                        if (!('functions' in content)) return [3, 10];
+                        if (!('functions' in content)) return [3 /*break*/, 10];
                         _j = content;
                         _k = 'functions';
-                        return [4, this.updateFunctions(content)];
+                        return [4 /*yield*/, this.updateFunctions(content)];
                     case 9:
                         _j[_k] = _l.sent();
                         _l.label = 10;
@@ -347,13 +331,14 @@ var ServerlessSecure = (function () {
                             delete content.provider.variableSyntax;
                             content.configValidationMode;
                         }
+                        // @ts-ignore
                         console.log(JSON.stringify(content, true, 2));
-                        if (!isYML) return [3, 12];
-                        return [4, this.writeYAML(content)];
+                        if (!isYML) return [3 /*break*/, 12];
+                        return [4 /*yield*/, this.writeYAML(content)];
                     case 11:
                         _l.sent();
                         _l.label = 12;
-                    case 12: return [2, content];
+                    case 12: return [2 /*return*/, content];
                 }
             });
         });
@@ -363,12 +348,14 @@ var ServerlessSecure = (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, node_yaml_1.write(this.baseYAML, content)
-                            .then(this.serverless.cli.log('YAML File Updated!'))
-                            .catch(function (e) { return _this.notification(e.message, 'error'); })];
+                    case 0: 
+                    // console.log(JSON.stringify(content, true, 2))
+                    return [4 /*yield*/, node_yaml_1.write(this.baseYAML, content)
+                            .then(this.serverless.cli.log('YAML File Updated!'))["catch"](function (e) { return _this.notification(e.message, 'error'); })];
                     case 1:
+                        // console.log(JSON.stringify(content, true, 2))
                         _a.sent();
-                        return [2];
+                        return [2 /*return*/];
                 }
             });
         });
@@ -383,25 +370,25 @@ var ServerlessSecure = (function () {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         that_1 = this;
-                        return [4, request_1.default
+                        return [4 /*yield*/, request_1["default"]
                                 .get(config_1.ZIP_URL)
                                 .on('error', function (error) { return _this.notification(error.message, 'error'); })
                                 .pipe(fse.createWriteStream(process.cwd() + "/secure_layer.zip"))
                                 .on('finish', function () { return that_1.unZipPackage(process.cwd() + "/secure_layer.zip", process.cwd() + "/secure_layer/"); })];
                     case 1:
                         _a.sent();
-                        return [3, 3];
+                        return [3 /*break*/, 3];
                     case 2:
                         err_2 = _a.sent();
                         console.error(err_2);
-                        return [3, 3];
-                    case 3: return [2];
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     ServerlessSecure.prototype.unZipPackage = function (extractPath, path) {
-        return __awaiter(this, void 0, void 0, function () {
+        return __awaiter(this, void 0, Promise, function () {
             var that_2, readStream, writeStream, err_3;
             var _this = this;
             return __generator(this, function (_a) {
@@ -414,39 +401,39 @@ var ServerlessSecure = (function () {
                         that_2 = this;
                         readStream = fse.createReadStream(extractPath);
                         writeStream = unzip.Extract({ path: path });
-                        return [4, readStream.pipe(writeStream).on('finish', function () { return that_2.notification('Secure layer applied..', 'success'); })];
+                        return [4 /*yield*/, readStream.pipe(writeStream).on('finish', function () { return that_2.notification('Secure layer applied..', 'success'); })];
                     case 1:
                         _a.sent();
                         ;
                         setTimeout(function () { return _this.deleteFile(path + "handler.js.map"); }, 1000);
                         setTimeout(function () { return _this.deleteFile(extractPath); }, 1000);
-                        return [3, 3];
+                        return [3 /*break*/, 3];
                     case 2:
                         err_3 = _a.sent();
                         this.notification(err_3.message, 'error');
-                        return [3, 3];
-                    case 3: return [2];
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     ServerlessSecure.prototype.deleteFile = function (extractPath) {
-        return __awaiter(this, void 0, void 0, function () {
+        return __awaiter(this, void 0, Promise, function () {
             var err_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4, fse.remove(extractPath)];
+                        return [4 /*yield*/, fse.remove(extractPath)];
                     case 1:
                         _a.sent();
                         this.notification("File: " + path.basename(extractPath) + " cleaned..", 'success');
-                        return [3, 3];
+                        return [3 /*break*/, 3];
                     case 2:
                         err_4 = _a.sent();
                         this.notification(err_4.message, 'error');
-                        return [3, 3];
-                    case 3: return [2];
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });

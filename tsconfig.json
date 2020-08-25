@@ -16,7 +16,7 @@
   "include": ["./**/*.ts"],
   "exclude": [
     "node_modules/**/*",
-    ".serverless/**/*",
+    "coverage/**/*",
     ".webpack/**/*",
     "_warmup/**/*",
     ".vscode/**/*",
