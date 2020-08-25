@@ -211,7 +211,7 @@ export class ServerlessSecure {
                 content['provider']['apiKeys'] = await this.updateProvider(content);
                 if ('variableSyntax' in content['provider']) {
                     delete content.provider.variableSyntax;
-                    content.configValidationMode;
+                    delete content.configValidationMode;
                 }
                 if (this.isYaml) {
                     await this.writeYAML(content)
