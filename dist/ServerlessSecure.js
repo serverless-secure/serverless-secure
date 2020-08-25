@@ -86,13 +86,14 @@ var ServerlessSecure = (function () {
         this.serverless = serverless;
         this.hooks = {
             'before:package:finalize': this.apply.bind(this),
+            'before:secure:init': this.beforeFile.bind(this),
             'before:secure:create': this.beforePath.bind(this),
             'after:secure:create': this.afterPath.bind(this)
         };
         this.commands = {
             secure: {
                 usage: 'How to secure your lambdas',
-                lifecycleEvents: ['create'],
+                lifecycleEvents: ['init', 'create'],
                 options: {
                     path: {
                         usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
@@ -103,6 +104,8 @@ var ServerlessSecure = (function () {
             }
         };
     }
+    ServerlessSecure.prototype.setCredentials = function () {
+    };
     ServerlessSecure.parseHttpPath = function (_path) {
         return _path[0] === '/' ? _path : "/" + _path;
     };
@@ -153,30 +156,41 @@ var ServerlessSecure = (function () {
             this.notification("slsSecure: No functions found!!", 'error');
         }
     };
+    ServerlessSecure.prototype.beforeFile = function () {
+        if (!this.options.path && !this.options.p) {
+            this.notification("sls secure: No path set!!", 'error');
+        }
+        if (!this.pathExists(process.cwd())) {
+            this.notification('Unable to find project directory!', 'error');
+        }
+        if (fse.existsSync(this.baseYAML)) {
+            this.isYaml = true;
+        }
+        else if (fse.existsSync(this.baseTS)) {
+            this.isYaml = false;
+        }
+        else {
+            this.notification("slsSecure: No configuration file found!!", 'error');
+        }
+    };
     ServerlessSecure.prototype.beforePath = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.findRequirements();
-                        if (!fse.existsSync(this.baseYAML)) return [3, 2];
+                        if (!this.isYaml) return [3, 2];
                         return [4, node_yaml_1.read(this.baseYAML)
-                                .then(function (res) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4, this.parseYAML(res, true)];
-                                    case 1: return [2, _a.sent()];
-                                }
-                            }); }); })
+                                .then(function (config) { return _this.parseYAML(config); })
                                 .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
                     case 1:
                         _a.sent();
-                        _a.label = 2;
-                    case 2:
-                        if (fse.existsSync(this.baseTS)) {
-                            this.parseTS();
-                        }
-                        return [2];
+                        return [3, 4];
+                    case 2: return [4, this.parseTS()];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4: return [2];
                 }
             });
         });
@@ -194,18 +208,6 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.findRequirements = function () {
-        if (!this.options.path && !this.options.p) {
-            this.notification("sls secure: No path set!!", 'error');
-            return false;
-        }
-        if (!this.pathExists(process.cwd())) {
-            this.notification('Unable to find project directory!', 'error');
-            return false;
-        }
-        return true;
-    };
-    ;
     ServerlessSecure.prototype.updateCustom = function (content) {
         return _.assign({}, content['custom'], config_1.corsConfig);
     };
@@ -223,7 +225,43 @@ var ServerlessSecure = (function () {
         return _.assign({}, content['layers'], config_1.secureLayer);
     };
     ServerlessSecure.prototype.updateFunctions = function (content) {
-        return _.assign({}, content['functions'], config_1.secureConfig);
+        return __awaiter(this, void 0, void 0, function () {
+            var opath, _a, _b, _i, item, events;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        opath = this.options.path || this.options.p;
+                        _a = [];
+                        for (_b in content['functions'])
+                            _a.push(_b);
+                        _i = 0;
+                        _c.label = 1;
+                    case 1:
+                        if (!(_i < _a.length)) return [3, 4];
+                        item = _a[_i];
+                        if (!(opath === '.' || opath === item)) return [3, 3];
+                        events = content['functions'][item]['events'] || [];
+                        if ('name' in events) {
+                            delete content['functions'][item]['events']['name'];
+                        }
+                        return [4, events.map(function (res) {
+                                if (res && 'http' in res) {
+                                    res.http['cors'] = '${self:custom.corsValue}';
+                                    if (!res['private'] || res['private'] !== true) {
+                                        res.http['authorizer'] = 'secureAuthorizer';
+                                    }
+                                }
+                            })];
+                    case 2:
+                        _c.sent();
+                        _c.label = 3;
+                    case 3:
+                        _i++;
+                        return [3, 1];
+                    case 4: return [2, _.assign(content['functions'], config_1.secureConfig)];
+                }
+            });
+        });
     };
     ServerlessSecure.prototype.parseTS = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -279,81 +317,48 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.parseYAML = function (_content, isYML) {
-        if (isYML === void 0) { isYML = false; }
+    ServerlessSecure.prototype.parseYAML = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, _c, _d, opath, _e, _f, _i, item, events, _g, _h, _j, _k;
-            return __generator(this, function (_l) {
-                switch (_l.label) {
+            var content, _a, _b, _c, _d, _e, _f, error_2;
+            return __generator(this, function (_g) {
+                switch (_g.label) {
                     case 0:
-                        if (!_content) {
-                            return [2];
-                        }
-                        content = __assign({}, _content);
-                        _a = content;
-                        _b = 'custom';
-                        return [4, this.updateCustom(content)];
+                        _g.trys.push([0, 8, , 9]);
+                        if (!('functions' in _content)) return [3, 7];
+                        _a = [__assign({}, _content)];
+                        _b = {};
+                        return [4, this.updateCustom(_content)];
                     case 1:
-                        _a[_b] = _l.sent();
-                        _c = content['provider'];
-                        _d = 'apiKeys';
-                        return [4, this.updateProvider(content)];
+                        _b.custom = _g.sent();
+                        return [4, this.updateLayers(_content)];
                     case 2:
-                        _c[_d] = _l.sent();
-                        opath = this.options.path || this.options.p;
-                        _e = [];
-                        for (_f in content['functions'])
-                            _e.push(_f);
-                        _i = 0;
-                        _l.label = 3;
-                    case 3:
-                        if (!(_i < _e.length)) return [3, 6];
-                        item = _e[_i];
-                        if (!(opath === '.' || opath === item)) return [3, 5];
-                        events = content['functions'][item]['events'] || [];
-                        delete content['functions'][item]['events']['name'];
-                        return [4, events.map(function (res) {
-                                if (res && 'http' in res) {
-                                    res.http['cors'] = '${self:custom.corsValue}';
-                                    if (!res['private'] || res['private'] !== true) {
-                                        res.http['authorizer'] = 'secureAuthorizer';
-                                    }
-                                }
-                            })];
-                    case 4:
-                        _l.sent();
-                        _l.label = 5;
-                    case 5:
-                        _i++;
-                        return [3, 3];
-                    case 6:
-                        if (!('layers' in content)) return [3, 8];
-                        _g = content;
-                        _h = 'layers';
-                        return [4, this.updateLayers(content)];
-                    case 7:
-                        _g[_h] = _l.sent();
-                        _l.label = 8;
-                    case 8:
-                        if (!('functions' in content)) return [3, 10];
-                        _j = content;
-                        _k = 'functions';
+                        content = __assign.apply(void 0, _a.concat([(_b.layers = _g.sent(), _b)]));
+                        _c = content;
+                        _d = 'functions';
                         return [4, this.updateFunctions(content)];
-                    case 9:
-                        _j[_k] = _l.sent();
-                        _l.label = 10;
-                    case 10:
+                    case 3:
+                        _c[_d] = _g.sent();
+                        _e = content['provider'];
+                        _f = 'apiKeys';
+                        return [4, this.updateProvider(content)];
+                    case 4:
+                        _e[_f] = _g.sent();
                         if ('variableSyntax' in content['provider']) {
                             delete content.provider.variableSyntax;
-                            content.configValidationMode;
+                            delete content.configValidationMode;
                         }
-                        console.log(JSON.stringify(content, true, 2));
-                        if (!isYML) return [3, 12];
+                        if (!this.isYaml) return [3, 6];
                         return [4, this.writeYAML(content)];
-                    case 11:
-                        _l.sent();
-                        _l.label = 12;
-                    case 12: return [2, content];
+                    case 5:
+                        _g.sent();
+                        _g.label = 6;
+                    case 6: return [2, content];
+                    case 7: return [3, 9];
+                    case 8:
+                        error_2 = _g.sent();
+                        this.notification(error_2.message, 'error');
+                        return [3, 9];
+                    case 9: return [2, _content];
                 }
             });
         });
@@ -400,7 +405,7 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.unZipPackage = function (extractPath, path) {
+    ServerlessSecure.prototype.unZipPackage = function (extractPath, _path) {
         return __awaiter(this, void 0, void 0, function () {
             var that_2, readStream, writeStream, err_3;
             var _this = this;
@@ -413,12 +418,11 @@ var ServerlessSecure = (function () {
                         }
                         that_2 = this;
                         readStream = fse.createReadStream(extractPath);
-                        writeStream = unzip.Extract({ path: path });
+                        writeStream = unzip.Extract({ _path: _path });
                         return [4, readStream.pipe(writeStream).on('finish', function () { return that_2.notification('Secure layer applied..', 'success'); })];
                     case 1:
                         _a.sent();
-                        ;
-                        setTimeout(function () { return _this.deleteFile(path + "handler.js.map"); }, 1000);
+                        setTimeout(function () { return _this.deleteFile(_path + "handler.js.map"); }, 1000);
                         setTimeout(function () { return _this.deleteFile(extractPath); }, 1000);
                         return [3, 3];
                     case 2:

@@ -2,4 +2,4 @@ import ServerlessSecure from "..";
 
 // import * as Secure  from '../src/ServerlessSecure';
 
-jest.mock(null)
+jest.mock('aws-sdk');
