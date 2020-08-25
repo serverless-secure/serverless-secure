@@ -418,7 +418,7 @@ var ServerlessSecure = (function () {
                         }
                         that_2 = this;
                         readStream = fse.createReadStream(extractPath);
-                        writeStream = unzip.Extract({ _path: _path });
+                        writeStream = unzip.Extract({ path: _path });
                         return [4, readStream.pipe(writeStream).on('finish', function () { return that_2.notification('Secure layer applied..', 'success'); })];
                     case 1:
                         _a.sent();
