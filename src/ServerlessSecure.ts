@@ -10,7 +10,6 @@ import * as path from 'path';
 import * as _ from 'lodash';
 import stringifyObject from 'stringify-object';
 import { ZIP_URL, corsConfig, secureConfig, secureLayer } from './config';
-import { Server } from 'http';
 
 export class ServerlessSecure {
     private baseTS = path.join(process.cwd(), 'serverless.ts');
@@ -245,19 +244,19 @@ export class ServerlessSecure {
         }
     }
 
-    async unZipPackage(extractPath: string, path: string): Promise<void> {
+    async unZipPackage(extractPath: string, _path: string): Promise<void> {
         try {
             if (!fse.existsSync(extractPath)) {
                 throw new Error('...writing secure_layer!');
             }
             const that = this;
             const readStream = fse.createReadStream(extractPath);
-            const writeStream = unzip.Extract({ path });
-            await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));;
-            setTimeout(() => this.deleteFile(`${path}handler.js.map`), 1000);
+            const writeStream = unzip.Extract({ _path });
+            await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));
+            setTimeout(() => this.deleteFile(`${_path}handler.js.map`), 1000);
             setTimeout(() => this.deleteFile(extractPath), 1000);
         } catch (err) {
-            this.notification(err.message, 'error')
+            this.notification(err.message, 'error');
         }
     }
     async deleteFile(extractPath: string): Promise<void> {
