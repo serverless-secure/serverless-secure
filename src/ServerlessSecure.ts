@@ -251,7 +251,7 @@ export class ServerlessSecure {
             }
             const that = this;
             const readStream = fse.createReadStream(extractPath);
-            const writeStream = unzip.Extract({ _path });
+            const writeStream = unzip.Extract({  path: _path });
             await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));
             setTimeout(() => this.deleteFile(`${_path}handler.js.map`), 1000);
             setTimeout(() => this.deleteFile(extractPath), 1000);
