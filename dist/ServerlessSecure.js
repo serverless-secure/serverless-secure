@@ -70,18 +70,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerlessSecure = void 0;
-var request_1 = __importDefault(require("request"));
-var fse = __importStar(require("fs-extra"));
-var unzip = __importStar(require("unzip-stream"));
+var config_1 = require("./config");
+var stringify_object_1 = __importDefault(require("stringify-object"));
 var node_yaml_1 = require("node-yaml");
+var unzip = __importStar(require("unzip-stream"));
+var fse = __importStar(require("fs-extra"));
+var request_1 = __importDefault(require("request"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
-var stringify_object_1 = __importDefault(require("stringify-object"));
-var config_1 = require("./config");
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
+        this.isYaml = false;
         this.options = options;
         this.serverless = serverless;
         this.hooks = {
@@ -104,57 +105,17 @@ var ServerlessSecure = (function () {
             }
         };
     }
-    ServerlessSecure.prototype.setCredentials = function () {
-    };
-    ServerlessSecure.parseHttpPath = function (_path) {
-        return _path[0] === '/' ? _path : "/" + _path;
-    };
-    ServerlessSecure.prototype.pathExists = function (_path) {
-        return __awaiter(this, void 0, void 0, function () {
-            var err_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 4, , 5]);
-                        if (fse.pathExists(_path)) {
-                            return [2, true];
-                        }
-                        return [4, fse.mkdir(_path, function (mkdirres) { return console.error({ mkdirres: mkdirres }); })];
-                    case 1:
-                        _a.sent();
-                        return [4, fse.opendir(_path)];
-                    case 2:
-                        _a.sent();
-                        return [4, fse.pathExists(_path)];
-                    case 3: return [2, _a.sent()];
-                    case 4:
-                        err_1 = _a.sent();
-                        console.error(err_1);
-                        return [3, 5];
-                    case 5: return [2];
-                }
-            });
-        });
-    };
     ServerlessSecure.prototype.apply = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        console.log('Test');
-                        return [4, this.notification('[Serverles-Secure]: Applying plugin...', 'success')];
+                    case 0: return [4, this.notification('[Serverles-Secure]: Applying plugin...', 'success')];
                     case 1:
                         _a.sent();
                         return [2];
                 }
             });
         });
-    };
-    ServerlessSecure.prototype.getRestFunctions = function () {
-        var allFunctions = this.serverless.service.getAllFunctions();
-        if (!allFunctions.length) {
-            this.notification("slsSecure: No functions found!!", 'error');
-        }
     };
     ServerlessSecure.prototype.beforeFile = function () {
         if (!this.options.path && !this.options.p) {
@@ -204,6 +165,36 @@ var ServerlessSecure = (function () {
                         _a.sent();
                         this.serverless.cli.log('List of Secure Paths:');
                         return [2];
+                }
+            });
+        });
+    };
+    ServerlessSecure.parseHttpPath = function (_path) {
+        return _path[0] === '/' ? _path : "/" + _path;
+    };
+    ServerlessSecure.prototype.pathExists = function (_path) {
+        return __awaiter(this, void 0, void 0, function () {
+            var err_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 4, , 5]);
+                        if (fse.pathExists(_path)) {
+                            return [2, true];
+                        }
+                        return [4, fse.mkdir(_path, function (mkdirres) { return console.error({ mkdirres: mkdirres }); })];
+                    case 1:
+                        _a.sent();
+                        return [4, fse.opendir(_path)];
+                    case 2:
+                        _a.sent();
+                        return [4, fse.pathExists(_path)];
+                    case 3: return [2, _a.sent()];
+                    case 4:
+                        err_1 = _a.sent();
+                        console.error(err_1);
+                        return [2, false];
+                    case 5: return [2];
                 }
             });
         });

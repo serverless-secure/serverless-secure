@@ -25,7 +25,7 @@ export const corsConfig = {
 };
 export const secureConfig = {
   generateToken: {
-    handler: 'secure_layer/handler.generateToken',
+    handler: 'secure_layer/handler.secureToken',
     events: [
       {
         http: {
