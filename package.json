@@ -3,7 +3,9 @@
   "version": "1.0.1",
   "description": "Lambda Secure Serverless Services",
   "main": "dist/index.js",
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "scripts": {
     "prepublish": "npm run build",
     "precommit": "npm run test",
@@ -77,7 +79,7 @@
     "dist/secure/",
     "dist/config.js",
     "package.json",
-    "tsconfig.json"
+    "package-lock.json"
   ],
   "husky": {
     "hooks": {
