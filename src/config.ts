@@ -24,12 +24,12 @@ export const corsConfig = {
   }
 };
 export const secureConfig = {
-  generateToken: {
+  secureToken: {
     handler: 'secure_layer/handler.secureToken',
     events: [
       {
         http: {
-          path: 'get_token',
+          path: 'secure_token',
           method: 'post',
           private: true
         }
