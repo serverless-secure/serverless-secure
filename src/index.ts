@@ -11,7 +11,7 @@ import * as _ from 'lodash';
 export class ServerlessSecure {
     private baseTS = path.join(process.cwd(), 'serverless.ts');
     private baseYAML = path.join(process.cwd(), 'serverless.yml');
-    private isYaml: boolean = false;
+    private isYaml = false;
     private serverless: Serverless;
     commands: object;
     options: { path: string; p: string; }

@@ -74,6 +74,8 @@
   },
   "files": [
     "src",
+    "dist",
+    "dist/config.js",
     "package.json",
     "tsconfig.json"
   ],
