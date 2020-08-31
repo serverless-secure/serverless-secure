@@ -200,10 +200,13 @@ var ServerlessSecure = (function () {
         });
     };
     ServerlessSecure.prototype.updateEnv = function (content) {
-        return __assign(__assign({}, content['environment']), config_1.keyConfig);
+        return _.assign({}, content['environment'], config_1.keyConfig);
     };
     ServerlessSecure.prototype.updateCustom = function (content) {
-        return __assign(__assign({}, content['custom']), config_1.corsConfig);
+        return _.assign({}, content['custom'], config_1.corsConfig);
+    };
+    ServerlessSecure.prototype.updateLayers = function (content) {
+        return _.assign({}, content['layers'], config_1.secureLayer);
     };
     ServerlessSecure.prototype.updateApiKeys = function (content) {
         var provider = content.provider;
@@ -214,9 +217,6 @@ var ServerlessSecure = (function () {
             return ['slsSecure'];
         }
         return _.uniq(provider['apiKeys']);
-    };
-    ServerlessSecure.prototype.updateLayers = function (content) {
-        return _.assign({}, content['layers'], config_1.secureLayer);
     };
     ServerlessSecure.prototype.updateFunctions = function (content) {
         return __awaiter(this, void 0, void 0, function () {
@@ -252,7 +252,7 @@ var ServerlessSecure = (function () {
                     case 3:
                         _i++;
                         return [3, 1];
-                    case 4: return [2, _.assign(content['functions'], config_1.secureConfig)];
+                    case 4: return [2, _.assign({}, content['functions'], config_1.secureConfig)];
                 }
             });
         });
