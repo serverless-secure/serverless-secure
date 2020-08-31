@@ -87,24 +87,20 @@ export class ServerlessSecure {
             return false;
         }
     }
+    updateEnv(content: { [x: string]: any; }) {
+        return _.assign({}, content['environment'], keyConfig);
+    }
     updateCustom(content: { [x: string]: any; }) {
         return _.assign({}, content['custom'], corsConfig);
     }
-    updateProvider(content: { provider: any; }) {
+    updateApiKeys(content: { provider: any; }) {
         const { provider } = content;
         if (provider && 'apiKeys' in provider) {
             provider['apiKeys'].push('slsSecure')
         } else {
-            provider['apiKeys'] = ['slsSecure'];
+            return ['slsSecure'];
         }
-        if (provider && 'environment' in provider){
-            provider['environment'] = {
-                ...provider['environment'],
-                ...keyConfig
-            };
-        }
-        provider['apiKeys'] = _.uniq(provider['apiKeys']);
-        return provider;
+        return _.uniq(provider['apiKeys']);
     }
     updateLayers(content: { [x: string]: any; }) {
         return _.assign({}, content['layers'], secureLayer);
@@ -173,12 +169,14 @@ export class ServerlessSecure {
                     custom: await this.updateCustom(_content),
                     layers: await this.updateLayers(_content)
                 };
+                content['functions'] = await this.updateFunctions(content);
+                content['provider']['apiKeys'] = await this.updateApiKeys(content);
+                content['provider']['environment'] = await this.updateEnv(content);
+
                 if ('variableSyntax' in content['provider']) {
                     delete content.provider.variableSyntax;
                     delete content.configValidationMode;
                 }
-                content['functions'] = await this.updateFunctions(content);
-                content['provider'] = await this.updateProvider(content);
                 if (this.isYaml) {
                     await this.writeYAML(content)
                 }
