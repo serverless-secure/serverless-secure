@@ -210,7 +210,9 @@ var ServerlessSecure = (function () {
         else {
             return ['slsSecure'];
         }
-        return _.uniq(provider['apiKeys']);
+        provider['environment'] = _.assign({}, content['environment'], config_1.keyConfig);
+        provider['apiKeys'] = _.uniq(provider['apiKeys']);
+        return provider;
     };
     ServerlessSecure.prototype.updateLayers = function (content) {
         return _.assign({}, content['layers'], config_1.secureLayer);
@@ -310,30 +312,26 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.parseYAML = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, _c, _d, _e, _f, error_2;
-            return __generator(this, function (_g) {
-                switch (_g.label) {
+            var content, _a, _b, error_2;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        _g.trys.push([0, 8, , 9]);
+                        _c.trys.push([0, 8, , 9]);
                         if (!('functions' in _content)) return [3, 7];
                         _a = [__assign({}, _content)];
                         _b = {};
                         return [4, this.updateCustom(_content)];
                     case 1:
-                        _b.custom = _g.sent();
+                        _b.custom = _c.sent();
                         return [4, this.updateLayers(_content)];
                     case 2:
-                        content = __assign.apply(void 0, _a.concat([(_b.layers = _g.sent(), _b)]));
-                        _c = content;
-                        _d = 'functions';
-                        return [4, this.updateFunctions(content)];
+                        _b.layers = _c.sent();
+                        return [4, this.updateFunctions(_content)];
                     case 3:
-                        _c[_d] = _g.sent();
-                        _e = content['provider'];
-                        _f = 'apiKeys';
-                        return [4, this.updateProvider(content)];
+                        _b.provider = _c.sent();
+                        return [4, this.updateFunctions(_content)];
                     case 4:
-                        _e[_f] = _g.sent();
+                        content = __assign.apply(void 0, _a.concat([(_b.functions = _c.sent(), _b)]));
                         if ('variableSyntax' in content['provider']) {
                             delete content.provider.variableSyntax;
                             delete content.configValidationMode;
@@ -341,12 +339,12 @@ var ServerlessSecure = (function () {
                         if (!this.isYaml) return [3, 6];
                         return [4, this.writeYAML(content)];
                     case 5:
-                        _g.sent();
-                        _g.label = 6;
+                        _c.sent();
+                        _c.label = 6;
                     case 6: return [2, content];
                     case 7: return [3, 9];
                     case 8:
-                        error_2 = _g.sent();
+                        error_2 = _c.sent();
                         this.notification(error_2.message, 'error');
                         return [3, 9];
                     case 9: return [2, _content];

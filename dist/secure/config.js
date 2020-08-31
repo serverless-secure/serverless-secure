@@ -1,11 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.envConfig = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
+exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.keyConfig = exports.envConfig = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
 exports.ZIP_URL = 'https://serverless-secure-files.s3-ap-southeast-1.amazonaws.com/secure-layer.zip';
 exports.envConfig = {
     STAGE: '${self:provider.stage}'
+};
+exports.keyConfig = {
+    SLS_SECRET_KEY: '${opt:SLS_SECRET_KEY, "MySecureKey"}'
 };
 exports.corsConfig = {
     corsValue: {

@@ -4,6 +4,9 @@ export const ZIP_URL = 'https://serverless-secure-files.s3-ap-southeast-1.amazon
 export const envConfig = {
   STAGE: '${self:provider.stage}'
 }
+export const keyConfig = {
+  SLS_SECRET_KEY: '${opt:SLS_SECRET_KEY, "MySecureKey"}'
+}
 export const corsConfig = {
   corsValue: {
     origin: '*',

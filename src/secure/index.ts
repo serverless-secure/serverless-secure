@@ -1,4 +1,4 @@
-import { ZIP_URL, corsConfig, secureConfig, secureLayer } from './config';
+import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig } from './config';
 import stringifyObject from 'stringify-object';
 import { read, write } from 'node-yaml';
 import * as unzip from 'unzip-stream';
@@ -97,7 +97,9 @@ export class ServerlessSecure {
         } else {
             return ['slsSecure'];
         }
-        return _.uniq(provider['apiKeys']);
+        provider['environment'] = _.assign({}, provider['environment'], keyConfig);
+        provider['apiKeys'] = _.uniq(provider['apiKeys']);
+        return provider;
     }
     updateLayers(content: { [x: string]: any; }) {
         return _.assign({}, content['layers'], secureLayer);
@@ -164,10 +166,10 @@ export class ServerlessSecure {
                 const content = {
                     ..._content,
                     custom: await this.updateCustom(_content),
-                    layers: await this.updateLayers(_content)
+                    layers: await this.updateLayers(_content),
+                    provider: await this.updateFunctions(_content),
+                    functions: await this.updateFunctions(_content)
                 };
-                content['functions'] = await this.updateFunctions(content);
-                content['provider']['apiKeys'] = await this.updateProvider(content);
                 if ('variableSyntax' in content['provider']) {
                     delete content.provider.variableSyntax;
                     delete content.configValidationMode;
