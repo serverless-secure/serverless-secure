@@ -200,10 +200,10 @@ var ServerlessSecure = (function () {
         });
     };
     ServerlessSecure.prototype.updateEnv = function (content) {
-        return _.assign({}, content['environment'], config_1.keyConfig);
+        return __assign(__assign({}, content['environment']), config_1.keyConfig);
     };
     ServerlessSecure.prototype.updateCustom = function (content) {
-        return _.assign({}, content['custom'], config_1.corsConfig);
+        return __assign(__assign({}, content['custom']), config_1.corsConfig);
     };
     ServerlessSecure.prototype.updateApiKeys = function (content) {
         var provider = content.provider;

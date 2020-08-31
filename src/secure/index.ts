@@ -88,10 +88,16 @@ export class ServerlessSecure {
         }
     }
     updateEnv(content: { [x: string]: any; }) {
-        return _.assign({}, content['environment'], keyConfig);
+        return {
+            ...content['environment'], 
+            ...keyConfig
+        };
     }
     updateCustom(content: { [x: string]: any; }) {
-        return _.assign({}, content['custom'], corsConfig);
+        return {
+            ...content['custom'], 
+            ...corsConfig
+        };
     }
     updateApiKeys(content: { provider: any; }) {
         const { provider } = content;
