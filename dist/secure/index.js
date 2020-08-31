@@ -199,10 +199,13 @@ var ServerlessSecure = (function () {
             });
         });
     };
+    ServerlessSecure.prototype.updateEnv = function (content) {
+        return _.assign({}, content['environment'], config_1.keyConfig);
+    };
     ServerlessSecure.prototype.updateCustom = function (content) {
         return _.assign({}, content['custom'], config_1.corsConfig);
     };
-    ServerlessSecure.prototype.updateProvider = function (content) {
+    ServerlessSecure.prototype.updateApiKeys = function (content) {
         var provider = content.provider;
         if (provider && 'apiKeys' in provider) {
             provider['apiKeys'].push('slsSecure');
@@ -210,9 +213,7 @@ var ServerlessSecure = (function () {
         else {
             return ['slsSecure'];
         }
-        provider['environment'] = _.assign({}, content['environment'], config_1.keyConfig);
-        provider['apiKeys'] = _.uniq(provider['apiKeys']);
-        return provider;
+        return _.uniq(provider['apiKeys']);
     };
     ServerlessSecure.prototype.updateLayers = function (content) {
         return _.assign({}, content['layers'], config_1.secureLayer);
@@ -312,42 +313,51 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.parseYAML = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, error_2;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var content, _a, _b, _c, _d, _e, _f, _g, _h, error_2;
+            return __generator(this, function (_j) {
+                switch (_j.label) {
                     case 0:
-                        _c.trys.push([0, 8, , 9]);
-                        if (!('functions' in _content)) return [3, 7];
+                        _j.trys.push([0, 9, , 10]);
+                        if (!('functions' in _content)) return [3, 8];
                         _a = [__assign({}, _content)];
                         _b = {};
                         return [4, this.updateCustom(_content)];
                     case 1:
-                        _b.custom = _c.sent();
+                        _b.custom = _j.sent();
                         return [4, this.updateLayers(_content)];
                     case 2:
-                        _b.layers = _c.sent();
-                        return [4, this.updateFunctions(_content)];
+                        content = __assign.apply(void 0, _a.concat([(_b.layers = _j.sent(), _b)]));
+                        _c = content;
+                        _d = 'functions';
+                        return [4, this.updateFunctions(content)];
                     case 3:
-                        _b.provider = _c.sent();
-                        return [4, this.updateFunctions(_content)];
+                        _c[_d] = _j.sent();
+                        _e = content['provider'];
+                        _f = 'apiKeys';
+                        return [4, this.updateApiKeys(content)];
                     case 4:
-                        content = __assign.apply(void 0, _a.concat([(_b.functions = _c.sent(), _b)]));
+                        _e[_f] = _j.sent();
+                        _g = content['provider'];
+                        _h = 'environment';
+                        return [4, this.updateEnv(content)];
+                    case 5:
+                        _g[_h] = _j.sent();
                         if ('variableSyntax' in content['provider']) {
                             delete content.provider.variableSyntax;
                             delete content.configValidationMode;
                         }
-                        if (!this.isYaml) return [3, 6];
+                        if (!this.isYaml) return [3, 7];
                         return [4, this.writeYAML(content)];
-                    case 5:
-                        _c.sent();
-                        _c.label = 6;
-                    case 6: return [2, content];
-                    case 7: return [3, 9];
-                    case 8:
-                        error_2 = _c.sent();
+                    case 6:
+                        _j.sent();
+                        _j.label = 7;
+                    case 7: return [2, content];
+                    case 8: return [3, 10];
+                    case 9:
+                        error_2 = _j.sent();
                         this.notification(error_2.message, 'error');
-                        return [3, 9];
-                    case 9: return [2, _content];
+                        return [3, 10];
+                    case 10: return [2, _content];
                 }
             });
         });

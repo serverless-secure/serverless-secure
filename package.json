@@ -75,9 +75,7 @@
     "testEnvironment": "node"
   },
   "files": [
-    "dist/",
-    "dist/secure/",
-    "dist/config.js",
+    "dist/**/*",
     "package.json",
     "package-lock.json"
   ],

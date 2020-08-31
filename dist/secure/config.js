@@ -8,7 +8,7 @@ exports.envConfig = {
     STAGE: '${self:provider.stage}'
 };
 exports.keyConfig = {
-    SLS_SECRET_KEY: '${opt:SLS_SECRET_KEY, "MySecureKey"}'
+    SLS_SECRET_KEY: 'MySecureKey'
 };
 exports.corsConfig = {
     corsValue: {
