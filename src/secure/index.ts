@@ -166,10 +166,10 @@ export class ServerlessSecure {
                 const content = {
                     ..._content,
                     custom: await this.updateCustom(_content),
-                    layers: await this.updateLayers(_content),
-                    provider: await this.updateFunctions(_content),
-                    functions: await this.updateFunctions(_content)
+                    layers: await this.updateLayers(_content)
                 };
+                content['functions'] = await this.updateFunctions(content);
+                content['provider'] = await this.updateProvider(content);
                 if ('variableSyntax' in content['provider']) {
                     delete content.provider.variableSyntax;
                     delete content.configValidationMode;
