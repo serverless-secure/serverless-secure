@@ -88,16 +88,13 @@ export class ServerlessSecure {
         }
     }
     updateEnv(content: { [x: string]: any; }) {
-        return {
-            ...content['environment'], 
-            ...keyConfig
-        };
+        return _.assign({}, content['environment'], keyConfig);
     }
     updateCustom(content: { [x: string]: any; }) {
-        return {
-            ...content['custom'], 
-            ...corsConfig
-        };
+        return _.assign({}, content['custom'], corsConfig);
+    }
+    updateLayers(content: { [x: string]: any; }) {
+        return _.assign({}, content['layers'], secureLayer);
     }
     updateApiKeys(content: { provider: any; }) {
         const { provider } = content;
@@ -108,9 +105,7 @@ export class ServerlessSecure {
         }
         return _.uniq(provider['apiKeys']);
     }
-    updateLayers(content: { [x: string]: any; }) {
-        return _.assign({}, content['layers'], secureLayer);
-    }
+
     async updateFunctions(content: { [x: string]: any; }) {
         const opath = this.options.path || this.options.p
         for (const item in content['functions']) {
@@ -129,7 +124,7 @@ export class ServerlessSecure {
                 })
             }
         }
-        return _.assign(content['functions'], secureConfig);
+        return _.assign({}, content['functions'], secureConfig);
     }
     async parseTS() {
         let open: number;
