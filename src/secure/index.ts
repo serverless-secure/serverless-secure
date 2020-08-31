@@ -95,12 +95,14 @@ export class ServerlessSecure {
         if (provider && 'apiKeys' in provider) {
             provider['apiKeys'].push('slsSecure')
         } else {
-            return ['slsSecure'];
+            provider['apiKeys'] = ['slsSecure'];
         }
-        provider['environment'] = {
-            ...provider['environment'],
-            ...keyConfig
-        };
+        if (provider && 'environment' in provider){
+            provider['environment'] = {
+                ...provider['environment'],
+                ...keyConfig
+            };
+        }
         provider['apiKeys'] = _.uniq(provider['apiKeys']);
         return provider;
     }
