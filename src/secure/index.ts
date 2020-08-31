@@ -97,7 +97,10 @@ export class ServerlessSecure {
         } else {
             return ['slsSecure'];
         }
-        provider['environment'] = _.assign({}, provider['environment'], keyConfig);
+        provider['environment'] = {
+            ...provider['environment'],
+            ...keyConfig
+        };
         provider['apiKeys'] = _.uniq(provider['apiKeys']);
         return provider;
     }
@@ -168,12 +171,12 @@ export class ServerlessSecure {
                     custom: await this.updateCustom(_content),
                     layers: await this.updateLayers(_content)
                 };
-                content['functions'] = await this.updateFunctions(content);
-                content['provider'] = await this.updateProvider(content);
                 if ('variableSyntax' in content['provider']) {
                     delete content.provider.variableSyntax;
                     delete content.configValidationMode;
                 }
+                content['functions'] = await this.updateFunctions(content);
+                content['provider'] = await this.updateProvider(content);
                 if (this.isYaml) {
                     await this.writeYAML(content)
                 }

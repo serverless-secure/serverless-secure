@@ -5,7 +5,7 @@ export const envConfig = {
   STAGE: '${self:provider.stage}'
 }
 export const keyConfig = {
-  SLS_SECRET_KEY: '${opt:SLS_SECRET_KEY, "MySecureKey"}'
+  SLS_SECRET_KEY: 'MySecureKey'
 }
 export const corsConfig = {
   corsValue: {
