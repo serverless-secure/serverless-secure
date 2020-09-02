@@ -156,7 +156,8 @@ var ServerlessSecure = (function () {
                             .then(function (config) {
                             _this.content = config;
                             _this.sourceFile = new config_update_1.ConfigUpdate(_this.content);
-                            _this.parseTS(_this.sourceFile.getConfigElement());
+                            var slsConfig = require(path.join(process.cwd(), 'serverless.ts'));
+                            _this.parseTS(slsConfig);
                         })
                             .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
                     case 3:
