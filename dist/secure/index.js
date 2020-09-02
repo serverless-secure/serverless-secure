@@ -270,51 +270,47 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.parseTS = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, error_1;
-            return __generator(this, function (_p) {
-                switch (_p.label) {
+            var content, _a, _b, _c, _d, error_1;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
-                        _p.trys.push([0, 7, , 8]);
+                        _e.trys.push([0, 8, , 9]);
                         content = _content;
                         if ('variableSyntax' in content['provider']) {
                             delete content.provider.variableSyntax;
                             delete content.configValidationMode;
                         }
-                        if (!('functions' in _content)) return [3, 6];
-                        _b = (_a = this.sourceFile).updateProperty;
-                        _c = ['custom'];
-                        return [4, this.updateCustom(content)];
+                        if (!('functions' in _content)) return [3, 7];
+                        return [4, this.sourceFile.updateProperty('functions', this.updateFunctions(content))];
                     case 1:
-                        _b.apply(_a, _c.concat([_p.sent()]));
-                        _e = (_d = this.sourceFile).updateProperty;
-                        _f = ['layers'];
-                        return [4, this.updateLayers(content)];
+                        _e.sent();
+                        return [4, this.sourceFile.updateProperty('custom', this.updateCustom(content))];
                     case 2:
-                        _e.apply(_d, _f.concat([_p.sent()]));
-                        _h = (_g = this.sourceFile).updateProperty;
-                        _j = ['functions'];
-                        return [4, this.updateFunctions(content)];
+                        _e.sent();
+                        return [4, this.sourceFile.updateProperty('layers', this.updateLayers(content))];
                     case 3:
-                        _h.apply(_g, _j.concat([_p.sent()]));
-                        _k = content['provider'];
-                        _l = 'apiKeys';
+                        _e.sent();
+                        _a = content['provider'];
+                        _b = 'apiKeys';
                         return [4, this.updateApiKeys(content)];
                     case 4:
-                        _k[_l] = _p.sent();
-                        _m = content['provider'];
-                        _o = 'environment';
+                        _a[_b] = _e.sent();
+                        _c = content['provider'];
+                        _d = 'environment';
                         return [4, this.updateEnv(content)];
                     case 5:
-                        _m[_o] = _p.sent();
-                        this.sourceFile.updateProperty('provider', content['provider']);
+                        _c[_d] = _e.sent();
+                        return [4, this.sourceFile.updateProperty('provider', content['provider'])];
+                    case 6:
+                        _e.sent();
                         this.writeTS(this.sourceFile);
                         return [2, content];
-                    case 6: return [3, 8];
-                    case 7:
-                        error_1 = _p.sent();
+                    case 7: return [3, 9];
+                    case 8:
+                        error_1 = _e.sent();
                         this.notification(error_1.message, 'error');
-                        return [3, 8];
-                    case 8: return [2];
+                        return [3, 9];
+                    case 9: return [2];
                 }
             });
         });
