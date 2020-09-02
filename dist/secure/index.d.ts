@@ -9,6 +9,7 @@ export declare class ServerlessSecure {
     private isYaml;
     private serverless;
     private sourceFile;
+    private functionList;
     commands: object;
     options: {
         path: string;

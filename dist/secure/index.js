@@ -83,6 +83,7 @@ var ServerlessSecure = (function () {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
         this.isYaml = false;
+        this.functionList = [];
         this.options = options;
         this.serverless = serverless;
         this.hooks = {
@@ -174,7 +175,6 @@ var ServerlessSecure = (function () {
                     case 0: return [4, this.downloadSecureLayer()];
                     case 1:
                         _a.sent();
-                        this.serverless.cli.log('List of Secure Paths:');
                         return [2];
                 }
             });
@@ -232,12 +232,14 @@ var ServerlessSecure = (function () {
     ServerlessSecure.prototype.updateFunctions = function (content) {
         return __awaiter(this, void 0, void 0, function () {
             var opath;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         opath = this.options.path || this.options.p;
                         return [4, _.mapValues(content['functions'], function (ele, item) {
                                 if (opath === '.' || opath === item) {
+                                    _this.functionList.push(item);
                                     var events = ele['events'] || [];
                                     if ('name' in events) {
                                         delete ele['events']['name'];
@@ -277,7 +279,7 @@ var ServerlessSecure = (function () {
                     case 0:
                         _a.trys.push([0, 8, , 9]);
                         content = this.contentUpdate(_content);
-                        if (!('functions' in _content)) return [3, 7];
+                        if (!('functions' in content)) return [3, 7];
                         return [4, this.updateFunctions(content)];
                     case 1:
                         func = _a.sent();
@@ -346,8 +348,8 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.ignoreErrors = function (sourceFile) {
         var source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t cors:');
-        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n            authorizer:');
+        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t cors:');
+        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t authorizer:');
     };
     ServerlessSecure.prototype.writeTS = function (sourceFile) {
         return __awaiter(this, void 0, void 0, function () {
@@ -433,6 +435,7 @@ var ServerlessSecure = (function () {
                         _a.sent();
                         setTimeout(function () { return _this.deleteFile(_path + "handler.js.map"); }, 1000);
                         setTimeout(function () { return _this.deleteFile(extractPath); }, 1000);
+                        this.functionList.forEach(function (func) { return _this.serverless.cli.log("Function Paths Convered!!: " + func); });
                         return [3, 3];
                     case 2:
                         err_3 = _a.sent();

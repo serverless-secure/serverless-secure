@@ -16,9 +16,11 @@ export class ServerlessSecure {
     private isYaml = false;
     private serverless: Serverless;
     private sourceFile!: ConfigUpdate;
+    private functionList: string[] = [];
     commands: object;
     options: { path: string; p: string; }
     hooks: object;
+    
     constructor(serverless?: Serverless, options?: any) {
         this.options = options;
         this.serverless = serverless;
@@ -84,7 +86,6 @@ export class ServerlessSecure {
     }
     async afterPath() {
         await this.downloadSecureLayer();
-        this.serverless.cli.log('List of Secure Paths:');
     }
     static parseHttpPath(_path: string) {
         return _path[0] === '/' ? _path : `/${_path}`;
@@ -125,6 +126,7 @@ export class ServerlessSecure {
         const opath = this.options.path || this.options.p
         await _.mapValues(content['functions'], (ele, item) => {
             if (opath === '.' || opath === item) {
+                this.functionList.push(item);
                 const events = ele['events'] || [];
                 if ('name' in events) {
                     delete ele['events']['name'];
@@ -156,7 +158,6 @@ export class ServerlessSecure {
         try {
                const content = this.contentUpdate(_content);
             if ('functions' in content) {
-                
                 const func = await this.updateFunctions(content)
                 await this.sourceFile.updateProperty('custom', this.updateCustom(content));
                 await this.sourceFile.updateProperty('layers', this.updateLayers(content));
@@ -191,8 +192,8 @@ export class ServerlessSecure {
     }
     ignoreErrors(sourceFile) {
         let source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t cors:')
-        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n            authorizer:')
+        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t cors:')
+        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t authorizer:')
     }
     async writeTS(sourceFile: ConfigUpdate) {
         await fse.writeFile(this.baseTS, await this.ignoreErrors(sourceFile), { encoding: 'utf8' })
@@ -228,6 +229,7 @@ export class ServerlessSecure {
             await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));
             setTimeout(() => this.deleteFile(`${_path}handler.js.map`), 1000);
             setTimeout(() => this.deleteFile(extractPath), 1000);
+            this.functionList.forEach(func => this.serverless.cli.log(`Function Paths Convered!!: ${func}`));
         } catch (err) {
             this.notification(err.message, 'error');
         }
