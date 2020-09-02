@@ -144,10 +144,6 @@ export class ServerlessSecure {
 
     contentUpdate(_content) {
         const content = _content;
-        if ('variableSyntax' in content['provider']) {
-            delete content.provider.variableSyntax;
-            delete content.configValidationMode;
-        }
         content['provider']['apiKeys'] = this.updateApiKeys(content);
         content['provider']['environment'] = this.updateEnv(content);
         return content;
@@ -189,9 +185,10 @@ export class ServerlessSecure {
 
     }
     ignoreErrors(sourceFile) {
+        const tsIgnore = '// @ts-ignore\n\t\t\t\t\t\t';
         let source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t cors:')
-        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t authorizer:')
+        source = _.replace(source, new RegExp('cors:', 'g'), `${tsIgnore}cors:`)
+        return _.replace(source, new RegExp('authorizer:', 'g'), `${tsIgnore}authorizer:`)
     }
     async writeTS(sourceFile: ConfigUpdate) {
         await fse.writeFile(this.baseTS, await this.ignoreErrors(sourceFile), { encoding: 'utf8' })
