@@ -17,10 +17,10 @@ export class ServerlessSecure {
     private serverless: Serverless;
     private sourceFile!: ConfigUpdate;
     commands: object;
-    options: { path: string; p: string; }
+    options: { path : string ; p: string;}
     hooks: object;
     constructor(serverless?: Serverless, options?: any) {
-        this.options = options;
+        this.options = options || { p: '.' };
         this.serverless = serverless;
         this.hooks = {
             'before:package:finalize': this.apply.bind(this),
@@ -36,7 +36,7 @@ export class ServerlessSecure {
                     path: {
                         usage:
                             'Specify what function you wish to secure: --path <Function Name> or -p <*>',
-                        required: true,
+                        required: false,
                         shortcut: 'p',
                     },
                 }
@@ -194,7 +194,7 @@ export class ServerlessSecure {
     }
     ignoreErrors(sourceFile){
         let source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source,new RegExp('cors:','g'),'// @ts-ignore \n            cors:')
+        source = _.replace(source,new RegExp('cors:','g'),'// @ts-ignore \n \t\t\t cors:')
         return _.replace(source,new RegExp('authorizer:','g'),'// @ts-ignore \n            authorizer:')
     }
     async writeTS(sourceFile: ConfigUpdate) {

@@ -69,6 +69,7 @@ const serverlessConfiguration: Serverless = {
       "sls-secure-auth-prd"
     ]
   },
+          
   functions: {
     hello: {
       handler: "handler.hello",
