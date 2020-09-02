@@ -194,8 +194,8 @@ export class ServerlessSecure {
     }
     ignoreErrors(sourceFile){
         let source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source,new RegExp('cors:',"g"),'// @ts-ignore \n            cors:')
-        return _.replace(source,new RegExp('authorizer:',"g"),'// @ts-ignore \n            authorizer:')
+        source = _.replace(source,new RegExp('cors:','g'),'// @ts-ignore \n            cors:')
+        return _.replace(source,new RegExp('authorizer:','g'),'// @ts-ignore \n            authorizer:')
     }
     async writeTS(sourceFile: ConfigUpdate) {
         await fse.writeFile(this.baseTS, this.ignoreErrors(sourceFile), { encoding: 'utf8' })
