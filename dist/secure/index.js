@@ -236,11 +236,11 @@ var ServerlessSecure = (function () {
                 switch (_a.label) {
                     case 0:
                         opath = this.options.path || this.options.p;
-                        return [4, _.mapValues(content['functions'], function (item) {
+                        return [4, _.mapValues(content['functions'], function (ele, item) {
                                 if (opath === '.' || opath === item) {
-                                    var events = content['functions'][item]['events'] || [];
+                                    var events = ele['events'] || [];
                                     if ('name' in events) {
-                                        delete content['functions'][item]['events']['name'];
+                                        delete ele['events']['name'];
                                     }
                                     _.map(events, function (res) {
                                         if (res && 'http' in res) {

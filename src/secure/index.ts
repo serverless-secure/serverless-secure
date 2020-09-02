@@ -123,11 +123,11 @@ export class ServerlessSecure {
 
     async updateFunctions(content: { [x: string]: any; }) {
         const opath = this.options.path || this.options.p
-        await _.mapValues(content['functions'], (item) => {
+        await _.mapValues(content['functions'], (ele, item) => {
             if (opath === '.' || opath === item) {
-                const events = content['functions'][item]['events'] || [];
+                const events = ele['events'] || [];
                 if ('name' in events) {
-                    delete content['functions'][item]['events']['name'];
+                    delete ele['events']['name'];
                 }
                 _.map(events, (res: any) => {
                     if (res && 'http' in res) {
