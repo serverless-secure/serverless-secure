@@ -77,7 +77,8 @@ export class ServerlessSecure {
                 .then((config: string) => {
                     this.content = config
                     this.sourceFile = new ConfigUpdate(this.content);
-                    this.parseTS(this.sourceFile.getConfigElement())
+                    const slsConfig = require(path.join(process.cwd(), 'serverless.ts'));
+                    this.parseTS((slsConfig as Object))
                 })
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'));
         }
