@@ -83,7 +83,7 @@ var ServerlessSecure = (function () {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
         this.isYaml = false;
-        this.options = options;
+        this.options = options || { p: '.' };
         this.serverless = serverless;
         this.hooks = {
             'before:package:finalize': this.apply.bind(this),
@@ -98,7 +98,7 @@ var ServerlessSecure = (function () {
                 options: {
                     path: {
                         usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
-                        required: true,
+                        required: false,
                         shortcut: 'p',
                     },
                 }
@@ -372,8 +372,8 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.ignoreErrors = function (sourceFile) {
         var source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source, new RegExp('cors:', "g"), '// @ts-ignore \n            cors:');
-        return _.replace(source, new RegExp('authorizer:', "g"), '// @ts-ignore \n            authorizer:');
+        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t cors:');
+        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n            authorizer:');
     };
     ServerlessSecure.prototype.writeTS = function (sourceFile) {
         return __awaiter(this, void 0, void 0, function () {

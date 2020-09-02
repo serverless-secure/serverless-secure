@@ -149,13 +149,13 @@ export class ServerlessSecure {
                 delete content.configValidationMode;
             }
             if ('functions' in _content) {
-                this.sourceFile.updateProperty('custom', await this.updateCustom(content));
-                this.sourceFile.updateProperty('layers', await this.updateLayers(content));
-                this.sourceFile.updateProperty('functions', await this.updateFunctions(content));
-
+                await this.sourceFile.updateProperty('functions', this.updateFunctions(content));
+                await this.sourceFile.updateProperty('custom', this.updateCustom(content));
+                await this.sourceFile.updateProperty('layers', this.updateLayers(content));
+                
                 content['provider']['apiKeys'] = await this.updateApiKeys(content);
                 content['provider']['environment'] = await this.updateEnv(content);
-                this.sourceFile.updateProperty('provider', content['provider']);
+                await this.sourceFile.updateProperty('provider', content['provider']);
 
                 this.writeTS(this.sourceFile);
 
