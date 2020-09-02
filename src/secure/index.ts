@@ -1,18 +1,21 @@
 import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig } from './config';
-import stringifyObject from 'stringify-object';
-import { read, write } from 'node-yaml';
 import * as unzip from 'unzip-stream';
 import Serverless from 'serverless';
 import * as fse from 'fs-extra';
 import request from 'request';
 import * as path from 'path';
 import * as _ from 'lodash';
+import YAWN from 'yawn-yaml/cjs'
+import { ConfigUpdate } from './config.update';
 
 export class ServerlessSecure {
     private baseTS = path.join(process.cwd(), 'serverless.ts');
     private baseYAML = path.join(process.cwd(), 'serverless.yml');
+    private content!: string;
+    private yawn: YAWN;
     private isYaml = false;
     private serverless: Serverless;
+    private sourceFile!: ConfigUpdate;
     commands: object;
     options: { path: string; p: string; }
     hooks: object;
@@ -60,11 +63,23 @@ export class ServerlessSecure {
     }
     async beforePath() {
         if (this.isYaml) {
-            await read(this.baseYAML)
-                .then((config: Serverless) => this.parseYAML(config))
+            await fse.readFile(this.baseYAML, { encoding: 'utf8' })
+                .then((config) => {
+                    this.content = config
+                    this.yawn = new YAWN(this.content);
+                    this.parseYAML(this.yawn.json)
+                })
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
         } else {
-            await this.parseTS();
+            await fse.readFile(this.baseYAML, { encoding: 'utf8' })
+            .then((config: string) => {
+                this.content = config
+                this.sourceFile = new ConfigUpdate(this.content); 
+                const Configuration = require(path.join(process.cwd(), 'serverless.ts'));
+                this.parseTS(Configuration)
+            })
+            .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
+            // await this.parseTS();
         }
     }
     async afterPath() {
@@ -111,7 +126,7 @@ export class ServerlessSecure {
         for (const item in content['functions']) {
             if (opath === '.' || opath === item) {
                 const events = content['functions'][item]['events'] || [];
-                if('name' in events) {
+                if ('name' in events) {
                     delete content['functions'][item]['events']['name'];
                 }
                 await events.map((res: any) => {
@@ -126,41 +141,28 @@ export class ServerlessSecure {
         }
         return _.assign({}, content['functions'], secureConfig);
     }
-    async parseTS() {
-        let open: number;
-        let close: number;
-        const utfArray: any[] = [];
+    async parseTS(_content: any) {
         try {
-            await fse.readFile(this.baseTS, 'utf-8', async (err, data) => {
-                if (err)
-                    return;
-                const serverlessConfiguration = require(path.join(process.cwd(), 'serverless.ts'));
-                const updatedConfig: any = await this.parseYAML(serverlessConfiguration);
-                const NewConfig = stringifyObject(updatedConfig, {
-                    indent: '   ',
-                    singleQuotes: false
-                }).substring(1);
-                const fileArray: any = data.split('\n');
-                fileArray.forEach((dataArr: string, x: any) => {
-                    const lArray = dataArr.split('');
-                    if (lArray.includes('=') && lArray.includes('{')) {
-                        open = x
-                    }
-                    if (lArray.includes('}')) {
-                        close = x
-                    }
-                });
-                utfArray.push(
-                    this.parseFile(fileArray, 0, open + 1).join('\n'),
-                    NewConfig + '\n',
-                    this.parseFile(fileArray, close + 1, fileArray.length + 1).join('\n')
-                );
-                fse.writeFile(this.baseTS, utfArray.join(''), 'utf-8');
-            });
+            const content = _content;
+            if ('variableSyntax' in content['provider']) {
+                delete content.provider.variableSyntax;
+                delete content.configValidationMode;
+            }
+            if ('functions' in _content) {
+                this.sourceFile.updateProperty('custom', await this.updateCustom(content)); 
+                this.sourceFile.updateProperty('layers', await this.updateLayers(content));
+                this.sourceFile.updateProperty('functions', await this.updateFunctions(content));
+
+                content['provider']['apiKeys'] = await this.updateApiKeys(content);
+                content['provider']['environment'] = await this.updateEnv(content);
+                this.sourceFile.updateProperty('provider', content['provider']);    
+
+                this.writeTS(this.sourceFile);
+                return content;
+            }
         } catch (error) {
             this.notification(error.message, 'error')
         }
-
     }
     async parseYAML(_content: any) {
         try {
@@ -189,12 +191,17 @@ export class ServerlessSecure {
         return _content;
 
     }
+    async writeTS(sourceFile: ConfigUpdate) {
+        await fse.writeFile(this.baseTS, sourceFile.getSourceFile().getFullText(), { encoding: 'utf8' })
+            .then(this.serverless.cli.log('TS File Updated!'))
+            .catch((e: Error) => this.notification(e.message, 'error'))
+    };
     async writeYAML(content: Serverless) {
-        await write(this.baseYAML, content)
+        this.yawn.json = _.assign({}, this.yawn.json, content);
+        await fse.writeFile(this.baseYAML, this.yawn.yaml, { encoding: 'utf8' })
             .then(this.serverless.cli.log('YAML File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))
     };
-
     async downloadSecureLayer() {
         try {
             const that = this;
@@ -207,7 +214,6 @@ export class ServerlessSecure {
             console.error(err)
         }
     }
-
     async unZipPackage(extractPath: string, _path: string): Promise<void> {
         try {
             if (!fse.existsSync(extractPath)) {
@@ -215,7 +221,7 @@ export class ServerlessSecure {
             }
             const that = this;
             const readStream = fse.createReadStream(extractPath);
-            const writeStream = unzip.Extract({  path: _path });
+            const writeStream = unzip.Extract({ path: _path });
             await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));
             setTimeout(() => this.deleteFile(`${_path}handler.js.map`), 1000);
             setTimeout(() => this.deleteFile(extractPath), 1000);

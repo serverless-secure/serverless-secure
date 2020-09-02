@@ -71,13 +71,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerlessSecure = void 0;
 var config_1 = require("./config");
-var stringify_object_1 = __importDefault(require("stringify-object"));
-var node_yaml_1 = require("node-yaml");
 var unzip = __importStar(require("unzip-stream"));
 var fse = __importStar(require("fs-extra"));
 var request_1 = __importDefault(require("request"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
+var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
+var config_update_1 = require("./config.update");
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
@@ -141,13 +141,24 @@ var ServerlessSecure = (function () {
                 switch (_a.label) {
                     case 0:
                         if (!this.isYaml) return [3, 2];
-                        return [4, node_yaml_1.read(this.baseYAML)
-                                .then(function (config) { return _this.parseYAML(config); })
+                        return [4, fse.readFile(this.baseYAML, { encoding: 'utf8' })
+                                .then(function (config) {
+                                _this.content = config;
+                                _this.yawn = new cjs_1.default(_this.content);
+                                _this.parseYAML(_this.yawn.json);
+                            })
                                 .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
                     case 1:
                         _a.sent();
                         return [3, 4];
-                    case 2: return [4, this.parseTS()];
+                    case 2: return [4, fse.readFile(this.baseYAML, { encoding: 'utf8' })
+                            .then(function (config) {
+                            _this.content = config;
+                            _this.sourceFile = new config_update_1.ConfigUpdate(_this.content);
+                            var Configuration = require(path.join(process.cwd(), 'serverless.ts'));
+                            _this.parseTS(Configuration);
+                        })
+                            .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
                     case 3:
                         _a.sent();
                         _a.label = 4;
@@ -257,56 +268,53 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.parseTS = function () {
+    ServerlessSecure.prototype.parseTS = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var open, close, utfArray, error_1;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var content, _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, error_1;
+            return __generator(this, function (_p) {
+                switch (_p.label) {
                     case 0:
-                        utfArray = [];
-                        _a.label = 1;
+                        _p.trys.push([0, 7, , 8]);
+                        content = _content;
+                        if ('variableSyntax' in content['provider']) {
+                            delete content.provider.variableSyntax;
+                            delete content.configValidationMode;
+                        }
+                        if (!('functions' in _content)) return [3, 6];
+                        _b = (_a = this.sourceFile).updateProperty;
+                        _c = ['custom'];
+                        return [4, this.updateCustom(content)];
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, fse.readFile(this.baseTS, 'utf-8', function (err, data) { return __awaiter(_this, void 0, void 0, function () {
-                                var serverlessConfiguration, updatedConfig, NewConfig, fileArray;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            if (err)
-                                                return [2];
-                                            serverlessConfiguration = require(path.join(process.cwd(), 'serverless.ts'));
-                                            return [4, this.parseYAML(serverlessConfiguration)];
-                                        case 1:
-                                            updatedConfig = _a.sent();
-                                            NewConfig = stringify_object_1.default(updatedConfig, {
-                                                indent: '   ',
-                                                singleQuotes: false
-                                            }).substring(1);
-                                            fileArray = data.split('\n');
-                                            fileArray.forEach(function (dataArr, x) {
-                                                var lArray = dataArr.split('');
-                                                if (lArray.includes('=') && lArray.includes('{')) {
-                                                    open = x;
-                                                }
-                                                if (lArray.includes('}')) {
-                                                    close = x;
-                                                }
-                                            });
-                                            utfArray.push(this.parseFile(fileArray, 0, open + 1).join('\n'), NewConfig + '\n', this.parseFile(fileArray, close + 1, fileArray.length + 1).join('\n'));
-                                            fse.writeFile(this.baseTS, utfArray.join(''), 'utf-8');
-                                            return [2];
-                                    }
-                                });
-                            }); })];
+                        _b.apply(_a, _c.concat([_p.sent()]));
+                        _e = (_d = this.sourceFile).updateProperty;
+                        _f = ['layers'];
+                        return [4, this.updateLayers(content)];
                     case 2:
-                        _a.sent();
-                        return [3, 4];
+                        _e.apply(_d, _f.concat([_p.sent()]));
+                        _h = (_g = this.sourceFile).updateProperty;
+                        _j = ['functions'];
+                        return [4, this.updateFunctions(content)];
                     case 3:
-                        error_1 = _a.sent();
+                        _h.apply(_g, _j.concat([_p.sent()]));
+                        _k = content['provider'];
+                        _l = 'apiKeys';
+                        return [4, this.updateApiKeys(content)];
+                    case 4:
+                        _k[_l] = _p.sent();
+                        _m = content['provider'];
+                        _o = 'environment';
+                        return [4, this.updateEnv(content)];
+                    case 5:
+                        _m[_o] = _p.sent();
+                        this.sourceFile.updateProperty('provider', content['provider']);
+                        this.writeTS(this.sourceFile);
+                        return [2, content];
+                    case 6: return [3, 8];
+                    case 7:
+                        error_1 = _p.sent();
                         this.notification(error_1.message, 'error');
-                        return [3, 4];
-                    case 4: return [2];
+                        return [3, 8];
+                    case 8: return [2];
                 }
             });
         });
@@ -362,14 +370,32 @@ var ServerlessSecure = (function () {
             });
         });
     };
+    ServerlessSecure.prototype.writeTS = function (sourceFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, fse.writeFile(this.baseTS, sourceFile.getSourceFile().getFullText(), { encoding: 'utf8' })
+                            .then(this.serverless.cli.log('TS File Updated!'))
+                            .catch(function (e) { return _this.notification(e.message, 'error'); })];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        });
+    };
+    ;
     ServerlessSecure.prototype.writeYAML = function (content) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, node_yaml_1.write(this.baseYAML, content)
-                            .then(this.serverless.cli.log('YAML File Updated!'))
-                            .catch(function (e) { return _this.notification(e.message, 'error'); })];
+                    case 0:
+                        this.yawn.json = _.assign({}, this.yawn.json, content);
+                        return [4, fse.writeFile(this.baseYAML, this.yawn.yaml, { encoding: 'utf8' })
+                                .then(this.serverless.cli.log('YAML File Updated!'))
+                                .catch(function (e) { return _this.notification(e.message, 'error'); })];
                     case 1:
                         _a.sent();
                         return [2];
