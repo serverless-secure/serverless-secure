@@ -74,7 +74,7 @@ export class ServerlessSecure {
             await fse.readFile(this.baseYAML, { encoding: 'utf8' })
             .then((config: string) => {
                 this.content = config
-                this.sourceFile = new ConfigUpdate(this.content); 
+                this.sourceFile = new ConfigUpdate(this.content);
                 const Configuration = require(path.join(process.cwd(), 'serverless.ts'));
                 this.parseTS(Configuration)
             })
@@ -149,13 +149,13 @@ export class ServerlessSecure {
                 delete content.configValidationMode;
             }
             if ('functions' in _content) {
-                this.sourceFile.updateProperty('custom', await this.updateCustom(content)); 
+                this.sourceFile.updateProperty('custom', await this.updateCustom(content));
                 this.sourceFile.updateProperty('layers', await this.updateLayers(content));
                 this.sourceFile.updateProperty('functions', await this.updateFunctions(content));
 
                 content['provider']['apiKeys'] = await this.updateApiKeys(content);
                 content['provider']['environment'] = await this.updateEnv(content);
-                this.sourceFile.updateProperty('provider', content['provider']);    
+                this.sourceFile.updateProperty('provider', content['provider']);
 
                 this.writeTS(this.sourceFile);
                 return content;

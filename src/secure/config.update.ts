@@ -6,7 +6,7 @@ import {
     PropertyAssignment,
     ObjectLiteralExpression,
     ObjectLiteralElementLike
-} from "ts-morph";
+} from 'ts-morph';
 import * as _ from 'lodash';
 import * as path from 'path';
 import stringifyObject from 'stringify-object';
@@ -23,7 +23,7 @@ export class ConfigUpdate {
                 indentationText: IndentationText.TwoSpaces,
             },
             compilerOptions: {
-                lib: ["es2017"],
+                lib: ['es2017'],
                 allowSyntheticDefaultImports: true,
                 esModuleInterop: true,
                 sourceMap: false,
@@ -36,9 +36,9 @@ export class ConfigUpdate {
     setSourceFile(source: string): void {
         try {
             this.project.addSourceFilesAtPaths(path.join(process.cwd(), 'serverless.ts'));
-            this.sourceFile = this.project.createSourceFile("/file.ts", source);
+            this.sourceFile = this.project.createSourceFile('/file.ts', source);
             this.addDataProp = this.sourceFile
-                .getVariableDeclarationOrThrow("serverlessConfiguration")
+                .getVariableDeclarationOrThrow('serverlessConfiguration')
                 .getInitializerOrThrow() as ObjectLiteralExpression;
         } catch (error) {
             console.log(error.message)
@@ -66,7 +66,7 @@ export class ConfigUpdate {
         try {
             this.getDataProp()
             .addPropertyAssignment({
-                name: "layers",
+                name: 'layers',
                 initializer: stringifyObject(content)
             })
         } catch (error) {
