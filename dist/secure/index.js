@@ -71,13 +71,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerlessSecure = void 0;
 var config_1 = require("./config");
+var config_update_1 = require("./config.update");
 var unzip = __importStar(require("unzip-stream"));
 var fse = __importStar(require("fs-extra"));
 var request_1 = __importDefault(require("request"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
 var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
-var config_update_1 = require("./config.update");
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
@@ -151,7 +151,7 @@ var ServerlessSecure = (function () {
                     case 1:
                         _a.sent();
                         return [3, 4];
-                    case 2: return [4, fse.readFile(this.baseYAML, { encoding: 'utf8' })
+                    case 2: return [4, fse.readFile(this.baseTS, { encoding: 'utf8' })
                             .then(function (config) {
                             _this.content = config;
                             _this.sourceFile = new config_update_1.ConfigUpdate(_this.content);

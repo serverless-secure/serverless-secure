@@ -35,7 +35,7 @@ var ConfigUpdate = (function () {
                 indentationText: ts_morph_1.IndentationText.TwoSpaces,
             },
             compilerOptions: {
-                lib: ["es2017"],
+                lib: ['es2017'],
                 allowSyntheticDefaultImports: true,
                 esModuleInterop: true,
                 sourceMap: false,
@@ -48,9 +48,9 @@ var ConfigUpdate = (function () {
     ConfigUpdate.prototype.setSourceFile = function (source) {
         try {
             this.project.addSourceFilesAtPaths(path.join(process.cwd(), 'serverless.ts'));
-            this.sourceFile = this.project.createSourceFile("/file.ts", source);
+            this.sourceFile = this.project.createSourceFile('/file.ts', source);
             this.addDataProp = this.sourceFile
-                .getVariableDeclarationOrThrow("serverlessConfiguration")
+                .getVariableDeclarationOrThrow('serverlessConfiguration')
                 .getInitializerOrThrow();
         }
         catch (error) {
@@ -75,12 +75,12 @@ var ConfigUpdate = (function () {
             return {};
         }
     };
-    ConfigUpdate.prototype.updateProperty = function (prop, content) {
-        this.removeProperty(prop);
+    ConfigUpdate.prototype.updateProperty = function (name, content) {
+        this.removeProperty(name);
         try {
             this.getDataProp()
                 .addPropertyAssignment({
-                name: "layers",
+                name: name,
                 initializer: stringify_object_1.default(content)
             });
         }

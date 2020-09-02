@@ -1,12 +1,12 @@
 import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig } from './config';
+import { ConfigUpdate } from './config.update';
 import * as unzip from 'unzip-stream';
 import Serverless from 'serverless';
+import YAWN from 'yawn-yaml/cjs';
 import * as fse from 'fs-extra';
 import request from 'request';
 import * as path from 'path';
 import * as _ from 'lodash';
-import YAWN from 'yawn-yaml/cjs'
-import { ConfigUpdate } from './config.update';
 
 export class ServerlessSecure {
     private baseTS = path.join(process.cwd(), 'serverless.ts');
@@ -71,7 +71,7 @@ export class ServerlessSecure {
                 })
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
         } else {
-            await fse.readFile(this.baseYAML, { encoding: 'utf8' })
+            await fse.readFile(this.baseTS, { encoding: 'utf8' })
             .then((config: string) => {
                 this.content = config
                 this.sourceFile = new ConfigUpdate(this.content);

@@ -61,12 +61,12 @@ export class ConfigUpdate {
             return ({} as PropertyAssignment);
         }
     }
-    updateProperty(prop: string, content: object) {
-        this.removeProperty(prop)
+    updateProperty(name: string, content: object) {
+        this.removeProperty(name)
         try {
             this.getDataProp()
             .addPropertyAssignment({
-                name: 'layers',
+                name,
                 initializer: stringifyObject(content)
             })
         } catch (error) {
