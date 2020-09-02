@@ -110,7 +110,7 @@ var ServerlessSecure = (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.notification('[Serverles-Secure]: Applying plugin...', 'success')];
+                    case 0: return [4, this.notification('Serverles-Secure: Applied!', 'success')];
                     case 1:
                         _a.sent();
                         return [2];
@@ -156,8 +156,7 @@ var ServerlessSecure = (function () {
                             .then(function (config) {
                             _this.content = config;
                             _this.sourceFile = new config_update_1.ConfigUpdate(_this.content);
-                            var Configuration = require(path.join(process.cwd(), 'serverless.ts'));
-                            _this.parseTS(Configuration);
+                            _this.parseTS(_this.sourceFile.getConfigElement());
                         })
                             .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
                     case 3:
@@ -348,8 +347,8 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.ignoreErrors = function (sourceFile) {
         var source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t cors:');
-        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t authorizer:');
+        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t cors:');
+        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t authorizer:');
     };
     ServerlessSecure.prototype.writeTS = function (sourceFile) {
         return __awaiter(this, void 0, void 0, function () {

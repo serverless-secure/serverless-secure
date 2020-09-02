@@ -12,8 +12,9 @@ import * as path from 'path';
 import stringifyObject from 'stringify-object';
 
 export class ConfigUpdate {
-    project: Project;
     sourceFile!: any;
+    project: Project;
+    configElement!: Object;
     addDataProp!: ObjectLiteralExpression;
     constructor(source: string) {
         this.project = new Project({
@@ -40,12 +41,19 @@ export class ConfigUpdate {
             this.addDataProp = this.sourceFile
                 .getVariableDeclarationOrThrow('serverlessConfiguration')
                 .getInitializerOrThrow() as ObjectLiteralExpression;
+            this.configElement = this.sourceFile
+                .getVariableDeclarationOrThrow('serverlessConfiguration')
+                .getInitializerOrThrow() as Object;
+                
         } catch (error) {
             console.log(error.message)
         }
     }
     getSourceFile() {
         return this.sourceFile.getSourceFile();
+    }
+    getConfigElement(){
+        return this.configElement;
     }
     getDataProp() {
         return this.addDataProp;

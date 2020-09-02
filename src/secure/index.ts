@@ -20,7 +20,7 @@ export class ServerlessSecure {
     commands: object;
     options: { path: string; p: string; }
     hooks: object;
-    
+
     constructor(serverless?: Serverless, options?: any) {
         this.options = options;
         this.serverless = serverless;
@@ -46,7 +46,7 @@ export class ServerlessSecure {
         }
     }
     async apply() {
-        await this.notification('[Serverles-Secure]: Applying plugin...', 'success');
+        await this.notification('Serverles-Secure: Applied!', 'success');
     }
     beforeFile() {
         if (!this.options.path && !this.options.p) {
@@ -77,11 +77,9 @@ export class ServerlessSecure {
                 .then((config: string) => {
                     this.content = config
                     this.sourceFile = new ConfigUpdate(this.content);
-                    const Configuration = require(path.join(process.cwd(), 'serverless.ts'));
-                    this.parseTS(Configuration)
+                    this.parseTS(this.sourceFile.getConfigElement())
                 })
-                .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
-            // await this.parseTS();
+                .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'));
         }
     }
     async afterPath() {
@@ -192,8 +190,8 @@ export class ServerlessSecure {
     }
     ignoreErrors(sourceFile) {
         let source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t cors:')
-        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n \t\t\t\t\t\t authorizer:')
+        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t cors:')
+        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t authorizer:')
     }
     async writeTS(sourceFile: ConfigUpdate) {
         await fse.writeFile(this.baseTS, await this.ignoreErrors(sourceFile), { encoding: 'utf8' })

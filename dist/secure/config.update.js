@@ -52,6 +52,9 @@ var ConfigUpdate = (function () {
             this.addDataProp = this.sourceFile
                 .getVariableDeclarationOrThrow('serverlessConfiguration')
                 .getInitializerOrThrow();
+            this.configElement = this.sourceFile
+                .getVariableDeclarationOrThrow('serverlessConfiguration')
+                .getInitializerOrThrow();
         }
         catch (error) {
             console.log(error.message);
@@ -59,6 +62,9 @@ var ConfigUpdate = (function () {
     };
     ConfigUpdate.prototype.getSourceFile = function () {
         return this.sourceFile.getSourceFile();
+    };
+    ConfigUpdate.prototype.getConfigElement = function () {
+        return this.configElement;
     };
     ConfigUpdate.prototype.getDataProp = function () {
         return this.addDataProp;
