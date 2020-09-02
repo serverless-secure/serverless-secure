@@ -154,12 +154,14 @@ export class ServerlessSecure {
     }
     async parseTS(_content: any) {
         try {
-            const content = this.contentUpdate(_content);
-            if ('functions' in _content) {
-                await this.sourceFile.updateProperty('functions', this.updateFunctions(content));
+               const content = this.contentUpdate(_content);
+            if ('functions' in content) {
+                
+                const func = await this.updateFunctions(content)
                 await this.sourceFile.updateProperty('custom', this.updateCustom(content));
                 await this.sourceFile.updateProperty('layers', this.updateLayers(content));
                 await this.sourceFile.updateProperty('provider', content['provider']);
+                await this.sourceFile.updateProperty('functions', func);
                 await this.writeTS(this.sourceFile);
                 return content;
             }

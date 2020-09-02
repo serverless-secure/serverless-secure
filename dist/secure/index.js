@@ -271,16 +271,16 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.parseTS = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, error_1;
+            var content, func, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 7, , 8]);
+                        _a.trys.push([0, 8, , 9]);
                         content = this.contentUpdate(_content);
-                        if (!('functions' in _content)) return [3, 6];
-                        return [4, this.sourceFile.updateProperty('functions', this.updateFunctions(content))];
+                        if (!('functions' in _content)) return [3, 7];
+                        return [4, this.updateFunctions(content)];
                     case 1:
-                        _a.sent();
+                        func = _a.sent();
                         return [4, this.sourceFile.updateProperty('custom', this.updateCustom(content))];
                     case 2:
                         _a.sent();
@@ -290,16 +290,19 @@ var ServerlessSecure = (function () {
                         return [4, this.sourceFile.updateProperty('provider', content['provider'])];
                     case 4:
                         _a.sent();
-                        return [4, this.writeTS(this.sourceFile)];
+                        return [4, this.sourceFile.updateProperty('functions', func)];
                     case 5:
                         _a.sent();
+                        return [4, this.writeTS(this.sourceFile)];
+                    case 6:
+                        _a.sent();
                         return [2, content];
-                    case 6: return [3, 8];
-                    case 7:
+                    case 7: return [3, 9];
+                    case 8:
                         error_1 = _a.sent();
                         this.notification(error_1.message, 'error');
-                        return [3, 8];
-                    case 8: return [2];
+                        return [3, 9];
+                    case 9: return [2];
                 }
             });
         });
