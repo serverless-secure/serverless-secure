@@ -72,13 +72,13 @@ export class ServerlessSecure {
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
         } else {
             await fse.readFile(this.baseTS, { encoding: 'utf8' })
-            .then((config: string) => {
-                this.content = config
-                this.sourceFile = new ConfigUpdate(this.content);
-                const Configuration = require(path.join(process.cwd(), 'serverless.ts'));
-                this.parseTS(Configuration)
-            })
-            .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
+                .then((config: string) => {
+                    this.content = config
+                    this.sourceFile = new ConfigUpdate(this.content);
+                    const Configuration = require(path.join(process.cwd(), 'serverless.ts'));
+                    this.parseTS(Configuration)
+                })
+                .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'))
             // await this.parseTS();
         }
     }
@@ -158,6 +158,7 @@ export class ServerlessSecure {
                 this.sourceFile.updateProperty('provider', content['provider']);
 
                 this.writeTS(this.sourceFile);
+
                 return content;
             }
         } catch (error) {
@@ -191,8 +192,13 @@ export class ServerlessSecure {
         return _content;
 
     }
+    ignoreErrors(sourceFile){
+        let source = sourceFile.getSourceFile().getFullText();
+        source = _.replace(source,new RegExp('cors:',"g"),'// @ts-ignore \n            cors:')
+        return _.replace(source,new RegExp('authorizer:',"g"),'// @ts-ignore \n            authorizer:')
+    }
     async writeTS(sourceFile: ConfigUpdate) {
-        await fse.writeFile(this.baseTS, sourceFile.getSourceFile().getFullText(), { encoding: 'utf8' })
+        await fse.writeFile(this.baseTS, this.ignoreErrors(sourceFile), { encoding: 'utf8' })
             .then(this.serverless.cli.log('TS File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))
     };
