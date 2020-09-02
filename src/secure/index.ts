@@ -17,7 +17,7 @@ export class ServerlessSecure {
     private serverless: Serverless;
     private sourceFile!: ConfigUpdate;
     commands: object;
-    options: { path : string ; p: string;}
+    options: { path: string; p: string; }
     hooks: object;
     constructor(serverless?: Serverless, options?: any) {
         this.options = options || { p: '.' };
@@ -141,24 +141,26 @@ export class ServerlessSecure {
         }
         return _.assign({}, content['functions'], secureConfig);
     }
+
+    contentUpdate(_content) {
+        const content = _content;
+        if ('variableSyntax' in content['provider']) {
+            delete content.provider.variableSyntax;
+            delete content.configValidationMode;
+        }
+        content['provider']['apiKeys'] = this.updateApiKeys(content);
+        content['provider']['environment'] = this.updateEnv(content);
+        return content;
+    }
     async parseTS(_content: any) {
         try {
-            const content = _content;
-            if ('variableSyntax' in content['provider']) {
-                delete content.provider.variableSyntax;
-                delete content.configValidationMode;
-            }
+            const content = this.contentUpdate(_content);
             if ('functions' in _content) {
                 await this.sourceFile.updateProperty('functions', this.updateFunctions(content));
                 await this.sourceFile.updateProperty('custom', this.updateCustom(content));
                 await this.sourceFile.updateProperty('layers', this.updateLayers(content));
-                
-                content['provider']['apiKeys'] = await this.updateApiKeys(content);
-                content['provider']['environment'] = await this.updateEnv(content);
                 await this.sourceFile.updateProperty('provider', content['provider']);
-
-                this.writeTS(this.sourceFile);
-
+                await this.writeTS(this.sourceFile);
                 return content;
             }
         } catch (error) {
@@ -169,18 +171,11 @@ export class ServerlessSecure {
         try {
             if ('functions' in _content) {
                 const content = {
-                    ..._content,
+                    ...this.contentUpdate(_content),
                     custom: await this.updateCustom(_content),
                     layers: await this.updateLayers(_content)
                 };
                 content['functions'] = await this.updateFunctions(content);
-                content['provider']['apiKeys'] = await this.updateApiKeys(content);
-                content['provider']['environment'] = await this.updateEnv(content);
-
-                if ('variableSyntax' in content['provider']) {
-                    delete content.provider.variableSyntax;
-                    delete content.configValidationMode;
-                }
                 if (this.isYaml) {
                     await this.writeYAML(content)
                 }
@@ -192,13 +187,13 @@ export class ServerlessSecure {
         return _content;
 
     }
-    ignoreErrors(sourceFile){
+    ignoreErrors(sourceFile) {
         let source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source,new RegExp('cors:','g'),'// @ts-ignore \n \t\t\t cors:')
-        return _.replace(source,new RegExp('authorizer:','g'),'// @ts-ignore \n            authorizer:')
+        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n \t\t\t cors:')
+        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n            authorizer:')
     }
     async writeTS(sourceFile: ConfigUpdate) {
-        await fse.writeFile(this.baseTS, this.ignoreErrors(sourceFile), { encoding: 'utf8' })
+        await fse.writeFile(this.baseTS, await this.ignoreErrors(sourceFile), { encoding: 'utf8' })
             .then(this.serverless.cli.log('TS File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))
     };

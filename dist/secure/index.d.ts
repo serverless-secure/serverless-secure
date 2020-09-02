@@ -37,6 +37,7 @@ export declare class ServerlessSecure {
     updateFunctions(content: {
         [x: string]: any;
     }): Promise<any>;
+    contentUpdate(_content: any): any;
     parseTS(_content: any): Promise<any>;
     parseYAML(_content: any): Promise<any>;
     ignoreErrors(sourceFile: any): string;

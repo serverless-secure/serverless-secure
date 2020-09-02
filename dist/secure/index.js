@@ -268,100 +268,84 @@ var ServerlessSecure = (function () {
             });
         });
     };
+    ServerlessSecure.prototype.contentUpdate = function (_content) {
+        var content = _content;
+        if ('variableSyntax' in content['provider']) {
+            delete content.provider.variableSyntax;
+            delete content.configValidationMode;
+        }
+        content['provider']['apiKeys'] = this.updateApiKeys(content);
+        content['provider']['environment'] = this.updateEnv(content);
+        return content;
+    };
     ServerlessSecure.prototype.parseTS = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, _c, _d, error_1;
-            return __generator(this, function (_e) {
-                switch (_e.label) {
+            var content, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
-                        _e.trys.push([0, 8, , 9]);
-                        content = _content;
-                        if ('variableSyntax' in content['provider']) {
-                            delete content.provider.variableSyntax;
-                            delete content.configValidationMode;
-                        }
-                        if (!('functions' in _content)) return [3, 7];
+                        _a.trys.push([0, 7, , 8]);
+                        content = this.contentUpdate(_content);
+                        if (!('functions' in _content)) return [3, 6];
                         return [4, this.sourceFile.updateProperty('functions', this.updateFunctions(content))];
                     case 1:
-                        _e.sent();
+                        _a.sent();
                         return [4, this.sourceFile.updateProperty('custom', this.updateCustom(content))];
                     case 2:
-                        _e.sent();
+                        _a.sent();
                         return [4, this.sourceFile.updateProperty('layers', this.updateLayers(content))];
                     case 3:
-                        _e.sent();
-                        _a = content['provider'];
-                        _b = 'apiKeys';
-                        return [4, this.updateApiKeys(content)];
-                    case 4:
-                        _a[_b] = _e.sent();
-                        _c = content['provider'];
-                        _d = 'environment';
-                        return [4, this.updateEnv(content)];
-                    case 5:
-                        _c[_d] = _e.sent();
+                        _a.sent();
                         return [4, this.sourceFile.updateProperty('provider', content['provider'])];
-                    case 6:
-                        _e.sent();
-                        this.writeTS(this.sourceFile);
+                    case 4:
+                        _a.sent();
+                        return [4, this.writeTS(this.sourceFile)];
+                    case 5:
+                        _a.sent();
                         return [2, content];
-                    case 7: return [3, 9];
-                    case 8:
-                        error_1 = _e.sent();
+                    case 6: return [3, 8];
+                    case 7:
+                        error_1 = _a.sent();
                         this.notification(error_1.message, 'error');
-                        return [3, 9];
-                    case 9: return [2];
+                        return [3, 8];
+                    case 8: return [2];
                 }
             });
         });
     };
     ServerlessSecure.prototype.parseYAML = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, _c, _d, _e, _f, _g, _h, error_2;
-            return __generator(this, function (_j) {
-                switch (_j.label) {
+            var content, _a, _b, _c, _d, error_2;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
-                        _j.trys.push([0, 9, , 10]);
-                        if (!('functions' in _content)) return [3, 8];
-                        _a = [__assign({}, _content)];
+                        _e.trys.push([0, 7, , 8]);
+                        if (!('functions' in _content)) return [3, 6];
+                        _a = [__assign({}, this.contentUpdate(_content))];
                         _b = {};
                         return [4, this.updateCustom(_content)];
                     case 1:
-                        _b.custom = _j.sent();
+                        _b.custom = _e.sent();
                         return [4, this.updateLayers(_content)];
                     case 2:
-                        content = __assign.apply(void 0, _a.concat([(_b.layers = _j.sent(), _b)]));
+                        content = __assign.apply(void 0, _a.concat([(_b.layers = _e.sent(), _b)]));
                         _c = content;
                         _d = 'functions';
                         return [4, this.updateFunctions(content)];
                     case 3:
-                        _c[_d] = _j.sent();
-                        _e = content['provider'];
-                        _f = 'apiKeys';
-                        return [4, this.updateApiKeys(content)];
-                    case 4:
-                        _e[_f] = _j.sent();
-                        _g = content['provider'];
-                        _h = 'environment';
-                        return [4, this.updateEnv(content)];
-                    case 5:
-                        _g[_h] = _j.sent();
-                        if ('variableSyntax' in content['provider']) {
-                            delete content.provider.variableSyntax;
-                            delete content.configValidationMode;
-                        }
-                        if (!this.isYaml) return [3, 7];
+                        _c[_d] = _e.sent();
+                        if (!this.isYaml) return [3, 5];
                         return [4, this.writeYAML(content)];
-                    case 6:
-                        _j.sent();
-                        _j.label = 7;
-                    case 7: return [2, content];
-                    case 8: return [3, 10];
-                    case 9:
-                        error_2 = _j.sent();
+                    case 4:
+                        _e.sent();
+                        _e.label = 5;
+                    case 5: return [2, content];
+                    case 6: return [3, 8];
+                    case 7:
+                        error_2 = _e.sent();
                         this.notification(error_2.message, 'error');
-                        return [3, 10];
-                    case 10: return [2, _content];
+                        return [3, 8];
+                    case 8: return [2, _content];
                 }
             });
         });
@@ -373,14 +357,19 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.writeTS = function (sourceFile) {
         return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c;
             var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, fse.writeFile(this.baseTS, this.ignoreErrors(sourceFile), { encoding: 'utf8' })
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        _b = (_a = fse).writeFile;
+                        _c = [this.baseTS];
+                        return [4, this.ignoreErrors(sourceFile)];
+                    case 1: return [4, _b.apply(_a, _c.concat([_d.sent(), { encoding: 'utf8' }]))
                             .then(this.serverless.cli.log('TS File Updated!'))
                             .catch(function (e) { return _this.notification(e.message, 'error'); })];
-                    case 1:
-                        _a.sent();
+                    case 2:
+                        _d.sent();
                         return [2];
                 }
             });
