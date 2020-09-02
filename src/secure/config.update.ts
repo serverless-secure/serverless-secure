@@ -8,13 +8,13 @@ import {
     ObjectLiteralElementLike
 } from 'ts-morph';
 import * as _ from 'lodash';
-import * as path from 'path';
 import stringifyObject from 'stringify-object';
+import requireFromString from 'require-from-string';
 
 export class ConfigUpdate {
     sourceFile!: any;
     project: Project;
-    configElement!: Object;
+    configElement!: any;
     addDataProp!: ObjectLiteralExpression;
     constructor(source: string) {
         this.project = new Project({
@@ -36,15 +36,15 @@ export class ConfigUpdate {
     }
     setSourceFile(source: string): void {
         try {
-            this.project.addSourceFilesAtPaths(path.join(process.cwd(), 'serverless.ts'));
+            // this.project.addSourceFilesAtPaths(path.join(process.cwd(), 'serverless.ts'));
             this.sourceFile = this.project.createSourceFile('/file.ts', source);
             this.addDataProp = this.sourceFile
                 .getVariableDeclarationOrThrow('serverlessConfiguration')
                 .getInitializerOrThrow() as ObjectLiteralExpression;
             this.configElement = this.sourceFile
                 .getVariableDeclarationOrThrow('serverlessConfiguration')
-                .getInitializerOrThrow() as Object;
-                
+                .getInitializerOrThrow() as ObjectLiteralElementLike;
+
         } catch (error) {
             console.log(error.message)
         }
@@ -52,8 +52,10 @@ export class ConfigUpdate {
     getSourceFile() {
         return this.sourceFile.getSourceFile();
     }
-    getConfigElement(){
-        return this.configElement;
+    getConfigElement() {
+        return requireFromString('const secure = ' +
+            this.addDataProp.getText() +
+            '\n module.exports = secure;')
     }
     getDataProp() {
         return this.addDataProp;
@@ -73,10 +75,10 @@ export class ConfigUpdate {
         this.removeProperty(name)
         try {
             this.getDataProp()
-            .addPropertyAssignment({
-                name,
-                initializer: stringifyObject(content)
-            })
+                .addPropertyAssignment({
+                    name,
+                    initializer: stringifyObject(content)
+                })
         } catch (error) {
             console.log(error.message);
         }

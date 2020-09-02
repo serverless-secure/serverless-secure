@@ -2,12 +2,12 @@ import { Project, PropertyAssignment, ObjectLiteralExpression, ObjectLiteralElem
 export declare class ConfigUpdate {
     sourceFile: any;
     project: Project;
-    configElement: Object;
+    configElement: any;
     addDataProp: ObjectLiteralExpression;
     constructor(source: string);
     setSourceFile(source: string): void;
     getSourceFile(): any;
-    getConfigElement(): Object;
+    getConfigElement(): any;
     getDataProp(): ObjectLiteralExpression;
     getProperties(): ObjectLiteralElementLike[];
     getProperty(prop: string): PropertyAssignment;

@@ -1,31 +1,12 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConfigUpdate = void 0;
 var ts_morph_1 = require("ts-morph");
-var path = __importStar(require("path"));
 var stringify_object_1 = __importDefault(require("stringify-object"));
+var require_from_string_1 = __importDefault(require("require-from-string"));
 var ConfigUpdate = (function () {
     function ConfigUpdate(source) {
         this.project = new ts_morph_1.Project({
@@ -47,7 +28,6 @@ var ConfigUpdate = (function () {
     }
     ConfigUpdate.prototype.setSourceFile = function (source) {
         try {
-            this.project.addSourceFilesAtPaths(path.join(process.cwd(), 'serverless.ts'));
             this.sourceFile = this.project.createSourceFile('/file.ts', source);
             this.addDataProp = this.sourceFile
                 .getVariableDeclarationOrThrow('serverlessConfiguration')
@@ -64,7 +44,9 @@ var ConfigUpdate = (function () {
         return this.sourceFile.getSourceFile();
     };
     ConfigUpdate.prototype.getConfigElement = function () {
-        return this.configElement;
+        return require_from_string_1.default('const secure = ' +
+            this.addDataProp.getText() +
+            '\n module.exports = secure;');
     };
     ConfigUpdate.prototype.getDataProp = function () {
         return this.addDataProp;
