@@ -262,10 +262,6 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.contentUpdate = function (_content) {
         var content = _content;
-        if ('variableSyntax' in content['provider']) {
-            delete content.provider.variableSyntax;
-            delete content.configValidationMode;
-        }
         content['provider']['apiKeys'] = this.updateApiKeys(content);
         content['provider']['environment'] = this.updateEnv(content);
         return content;
@@ -346,9 +342,10 @@ var ServerlessSecure = (function () {
         });
     };
     ServerlessSecure.prototype.ignoreErrors = function (sourceFile) {
+        var tsIgnore = '// @ts-ignore\n\t\t\t\t\t\t';
         var source = sourceFile.getSourceFile().getFullText();
-        source = _.replace(source, new RegExp('cors:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t cors:');
-        return _.replace(source, new RegExp('authorizer:', 'g'), '// @ts-ignore \n\t\t\t\t\t\t authorizer:');
+        source = _.replace(source, new RegExp('cors:', 'g'), tsIgnore + "cors:");
+        return _.replace(source, new RegExp('authorizer:', 'g'), tsIgnore + "authorizer:");
     };
     ServerlessSecure.prototype.writeTS = function (sourceFile) {
         return __awaiter(this, void 0, void 0, function () {
