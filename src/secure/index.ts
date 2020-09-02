@@ -20,7 +20,7 @@ export class ServerlessSecure {
     options: { path: string; p: string; }
     hooks: object;
     constructor(serverless?: Serverless, options?: any) {
-        this.options = options || { p: '.' };
+        this.options = options;
         this.serverless = serverless;
         this.hooks = {
             'before:package:finalize': this.apply.bind(this),
@@ -48,7 +48,7 @@ export class ServerlessSecure {
     }
     beforeFile() {
         if (!this.options.path && !this.options.p) {
-            this.notification(`sls secure: No path set!!`, 'error')
+            this.options.path = '.';
         }
         if (!this.pathExists(process.cwd())) {
             this.notification('Unable to find project directory!', 'error')
@@ -123,13 +123,13 @@ export class ServerlessSecure {
 
     async updateFunctions(content: { [x: string]: any; }) {
         const opath = this.options.path || this.options.p
-        for (const item in content['functions']) {
+        await _.mapValues(content['functions'], (item) => {
             if (opath === '.' || opath === item) {
                 const events = content['functions'][item]['events'] || [];
                 if ('name' in events) {
                     delete content['functions'][item]['events']['name'];
                 }
-                await events.map((res: any) => {
+                _.map(events, (res: any) => {
                     if (res && 'http' in res) {
                         res.http['cors'] = '${self:custom.corsValue}';
                         if (!res['private'] || res['private'] !== true) {
@@ -138,7 +138,7 @@ export class ServerlessSecure {
                     }
                 })
             }
-        }
+        });
         return _.assign({}, content['functions'], secureConfig);
     }
 

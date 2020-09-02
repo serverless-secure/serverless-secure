@@ -83,7 +83,7 @@ var ServerlessSecure = (function () {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
         this.isYaml = false;
-        this.options = options || { p: '.' };
+        this.options = options;
         this.serverless = serverless;
         this.hooks = {
             'before:package:finalize': this.apply.bind(this),
@@ -119,7 +119,7 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.beforeFile = function () {
         if (!this.options.path && !this.options.p) {
-            this.notification("sls secure: No path set!!", 'error');
+            this.options.path = '.';
         }
         if (!this.pathExists(process.cwd())) {
             this.notification('Unable to find project directory!', 'error');
@@ -231,39 +231,30 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.updateFunctions = function (content) {
         return __awaiter(this, void 0, void 0, function () {
-            var opath, _a, _b, _i, item, events;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var opath;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         opath = this.options.path || this.options.p;
-                        _a = [];
-                        for (_b in content['functions'])
-                            _a.push(_b);
-                        _i = 0;
-                        _c.label = 1;
-                    case 1:
-                        if (!(_i < _a.length)) return [3, 4];
-                        item = _a[_i];
-                        if (!(opath === '.' || opath === item)) return [3, 3];
-                        events = content['functions'][item]['events'] || [];
-                        if ('name' in events) {
-                            delete content['functions'][item]['events']['name'];
-                        }
-                        return [4, events.map(function (res) {
-                                if (res && 'http' in res) {
-                                    res.http['cors'] = '${self:custom.corsValue}';
-                                    if (!res['private'] || res['private'] !== true) {
-                                        res.http['authorizer'] = 'secureAuthorizer';
+                        return [4, _.mapValues(content['functions'], function (item) {
+                                if (opath === '.' || opath === item) {
+                                    var events = content['functions'][item]['events'] || [];
+                                    if ('name' in events) {
+                                        delete content['functions'][item]['events']['name'];
                                     }
+                                    _.map(events, function (res) {
+                                        if (res && 'http' in res) {
+                                            res.http['cors'] = '${self:custom.corsValue}';
+                                            if (!res['private'] || res['private'] !== true) {
+                                                res.http['authorizer'] = 'secureAuthorizer';
+                                            }
+                                        }
+                                    });
                                 }
                             })];
-                    case 2:
-                        _c.sent();
-                        _c.label = 3;
-                    case 3:
-                        _i++;
-                        return [3, 1];
-                    case 4: return [2, _.assign({}, content['functions'], config_1.secureConfig)];
+                    case 1:
+                        _a.sent();
+                        return [2, _.assign({}, content['functions'], config_1.secureConfig)];
                 }
             });
         });
