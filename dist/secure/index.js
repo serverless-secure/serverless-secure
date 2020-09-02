@@ -73,11 +73,11 @@ exports.ServerlessSecure = void 0;
 var config_1 = require("./config");
 var config_update_1 = require("./config.update");
 var unzip = __importStar(require("unzip-stream"));
+var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var fse = __importStar(require("fs-extra"));
 var request_1 = __importDefault(require("request"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
-var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
