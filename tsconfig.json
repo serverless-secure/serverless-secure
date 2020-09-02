@@ -9,10 +9,9 @@
     "esModuleInterop": true,
     "sourceMap": false,
     "target": "es5",
-    "module": "commonjs",
-    "types": ["node"],
+    "module": "amd",
     "declaration": true,
-    "outDir": "dist",
+    "outFile": "dist/index.js", 
     // "strict": true
   },
   "include": ["./**/*.ts"],
