@@ -1,5 +1,5 @@
 import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig } from './config';
-import { ConfigUpdate } from './config.update';
+import { TSConfigUpdate } from './ts-update';
 import * as unzip from 'unzip-stream';
 import Serverless from 'serverless';
 import YAWN from 'yawn-yaml/cjs';
@@ -9,17 +9,17 @@ import * as path from 'path';
 import * as _ from 'lodash';
 
 export class ServerlessSecure {
+    private yawn: YAWN;
+    public hooks: object;
+    private isYaml = false;
+    public commands: object;
+    private content!: string;
+    private serverless: Serverless;
+    private sourceFile!: TSConfigUpdate;
+    private functionList: string[] = [];
+    public options: { path: string; p: string; };
     private baseTS = path.join(process.cwd(), 'serverless.ts');
     private baseYAML = path.join(process.cwd(), 'serverless.yml');
-    private content!: string;
-    private yawn: YAWN;
-    private isYaml = false;
-    private serverless: Serverless;
-    private sourceFile!: ConfigUpdate;
-    private functionList: string[] = [];
-    commands: object;
-    options: { path: string; p: string; }
-    hooks: object;
 
     constructor(serverless?: Serverless, options?: any) {
         this.options = options;
@@ -76,7 +76,7 @@ export class ServerlessSecure {
             await fse.readFile(this.baseTS, { encoding: 'utf8' })
                 .then((config: string) => {
                     this.content = config
-                    this.sourceFile = new ConfigUpdate(this.content);
+                    this.sourceFile = new TSConfigUpdate(this.content);
                     this.parseTS(this.sourceFile.getConfigElement())
                 })
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'));
@@ -142,7 +142,7 @@ export class ServerlessSecure {
         return _.assign({}, content['functions'], secureConfig);
     }
 
-    contentUpdate(_content) {
+    contentUpdate(_content: any) {
         const content = _content;
         content['provider']['apiKeys'] = this.updateApiKeys(content);
         content['provider']['environment'] = this.updateEnv(content);
@@ -184,13 +184,13 @@ export class ServerlessSecure {
         return _content;
 
     }
-    ignoreErrors(sourceFile) {
+    ignoreErrors(sourceFile: TSConfigUpdate) {
         const tsIgnore = '// @ts-ignore\n\t\t\t\t\t\t';
         let source = sourceFile.getSourceFile().getFullText();
         source = _.replace(source, new RegExp('cors:', 'g'), `${tsIgnore}cors:`)
         return _.replace(source, new RegExp('authorizer:', 'g'), `${tsIgnore}authorizer:`)
     }
-    async writeTS(sourceFile: ConfigUpdate) {
+    async writeTS(sourceFile: TSConfigUpdate) {
         await fse.writeFile(this.baseTS, await this.ignoreErrors(sourceFile), { encoding: 'utf8' })
             .then(this.serverless.cli.log('TS File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))

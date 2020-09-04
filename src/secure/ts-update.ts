@@ -11,11 +11,11 @@ import * as _ from 'lodash';
 import stringifyObject from 'stringify-object';
 import requireFromString from 'require-from-string';
 
-export class ConfigUpdate {
-    sourceFile!: any;
-    project: Project;
-    configElement!: any;
-    addDataProp!: ObjectLiteralExpression;
+export class TSConfigUpdate {
+    private sourceFile!: any;
+    private project: Project;
+    public configElement!: any;
+    private addDataProp!: ObjectLiteralExpression;
     constructor(source: string) {
         this.project = new Project({
             useInMemoryFileSystem: true, // this example doesn't use the real file system

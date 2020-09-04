@@ -71,7 +71,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerlessSecure = void 0;
 var config_1 = require("./config");
-var config_update_1 = require("./config.update");
+var ts_update_1 = require("./ts-update");
 var unzip = __importStar(require("unzip-stream"));
 var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var fse = __importStar(require("fs-extra"));
@@ -80,10 +80,10 @@ var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
-        this.baseTS = path.join(process.cwd(), 'serverless.ts');
-        this.baseYAML = path.join(process.cwd(), 'serverless.yml');
         this.isYaml = false;
         this.functionList = [];
+        this.baseTS = path.join(process.cwd(), 'serverless.ts');
+        this.baseYAML = path.join(process.cwd(), 'serverless.yml');
         this.options = options;
         this.serverless = serverless;
         this.hooks = {
@@ -155,7 +155,7 @@ var ServerlessSecure = (function () {
                     case 2: return [4, fse.readFile(this.baseTS, { encoding: 'utf8' })
                             .then(function (config) {
                             _this.content = config;
-                            _this.sourceFile = new config_update_1.ConfigUpdate(_this.content);
+                            _this.sourceFile = new ts_update_1.TSConfigUpdate(_this.content);
                             _this.parseTS(_this.sourceFile.getConfigElement());
                         })
                             .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];

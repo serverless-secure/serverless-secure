@@ -11,7 +11,7 @@
     "precommit": "npm run test",
     "build": "rimraf dist && tsc --project tsconfig.json",
     "pretest": "npm run lint",
-    "test": "jest --coverage",
+    "test": "snyk test && jest --coverage",
     "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "deploy:local": "npm run build && npm link",
@@ -51,6 +51,7 @@
     "readme-md-generator": "^1.0.0",
     "rimraf": "^3.0.2",
     "serverless-webpack": "^5.2.0",
+    "snyk": "^1.388.0",
     "ts-jest": "^25.5.1",
     "ts-loader": "^6.2.2",
     "tsc-watch": "^4.2.9",
@@ -84,7 +85,8 @@
   ],
   "husky": {
     "hooks": {
-      "pre-push": "npm run build && npm test"
+      "pre-commit": "npm run build && npm test",
+      "pre-push": "snyk test"
     }
   },
   "repository": {
