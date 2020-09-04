@@ -85,8 +85,8 @@
   ],
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build && npm test",
-      "pre-push": "snyk test"
+      "pre-commit": "npm run build && git add .",
+      "pre-push": "snyk test && npm test"
     }
   },
   "repository": {
