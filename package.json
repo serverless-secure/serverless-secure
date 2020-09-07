@@ -9,7 +9,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "precommit": "npm run test",
-    "build": "rimraf dist && tsc --project tsconfig.json",
+    "build": "rimraf dist && tsc --project tsconfig.json --declaration",
     "pretest": "npm run lint",
     "test": "snyk test && jest --coverage",
     "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",

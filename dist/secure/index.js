@@ -220,11 +220,8 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.updateApiKeys = function (content) {
         var provider = content.provider;
-        if (provider && 'apiKeys' in provider) {
-            provider['apiKeys'].push('slsSecure');
-        }
-        else {
-            return ['slsSecure'];
+        if (provider && !_.has(provider, 'apiKeys')) {
+            return ['sls-secure-auth'];
         }
         return _.uniq(provider['apiKeys']);
     };

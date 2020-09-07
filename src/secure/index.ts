@@ -112,10 +112,8 @@ export class ServerlessSecure {
     }
     updateApiKeys(content: { provider: any; }) {
         const { provider } = content;
-        if (provider && 'apiKeys' in provider) {
-            provider['apiKeys'].push('slsSecure')
-        } else {
-            return ['slsSecure'];
+        if (provider && !_.has(provider, 'apiKeys')) {
+            return ['sls-secure-auth'];
         }
         return _.uniq(provider['apiKeys']);
     }

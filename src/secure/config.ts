@@ -1,6 +1,6 @@
 export const SEC_PATH = 'secure_layer';
 export const ZIP_FILE = 'secure-layer.zip';
-export const ZIP_URL = 'https://serverless-secure-files.s3-ap-southeast-1.amazonaws.com/secure-layer.zip';
+export const ZIP_URL = 'https://dev-api.serverless-secure.com/layers/pullzip';
 export const envConfig = {
   STAGE: '${self:provider.stage}'
 }

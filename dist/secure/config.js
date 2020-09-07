@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.keyConfig = exports.envConfig = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
-exports.ZIP_URL = 'https://serverless-secure-files.s3-ap-southeast-1.amazonaws.com/secure-layer.zip';
+exports.ZIP_URL = 'https://dev-api.serverless-secure.com/layers/pullzip';
 exports.envConfig = {
     STAGE: '${self:provider.stage}'
 };
