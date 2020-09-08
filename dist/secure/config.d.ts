@@ -21,6 +21,7 @@ export declare const secureConfig: {
             http: {
                 path: string;
                 method: string;
+                cors: string;
                 private: boolean;
             };
         }[];

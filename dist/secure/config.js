@@ -37,6 +37,7 @@ exports.secureConfig = {
                 http: {
                     path: 'secure_token',
                     method: 'post',
+                    cors: '${self:custom.corsValue}',
                     private: true
                 }
             }
