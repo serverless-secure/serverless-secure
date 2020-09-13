@@ -19,8 +19,8 @@ export declare class ServerlessSecure {
     constructor(serverless?: Serverless, options?: any);
     apply(): Promise<void>;
     beforeFile(): void;
-    beforePath(): Promise<void>;
     afterPath(): Promise<void>;
+    beforePath(): Promise<void>;
     static parseHttpPath(_path: string): string;
     pathExists(_path: string): Promise<boolean>;
     updateEnv(content: {
@@ -44,8 +44,9 @@ export declare class ServerlessSecure {
     ignoreErrors(sourceFile: TSConfigUpdate): string;
     writeTS(sourceFile: TSConfigUpdate): Promise<void>;
     writeYAML(content: Serverless): Promise<void>;
+    mkdirRecursively(folderpath: any): boolean;
     downloadSecureLayer(): Promise<void>;
-    unZipPackage(extractPath: string, _path: string): Promise<void>;
+    unZipPackage(zip: any, data: any): Promise<void>;
     deleteFile(extractPath: string): Promise<void>;
     notification(message: string, type: string): void;
     parseFile(arr: _.List<unknown> | null | undefined, top: number | undefined, bot: number | undefined): any;

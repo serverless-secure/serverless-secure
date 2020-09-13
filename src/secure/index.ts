@@ -1,11 +1,11 @@
 import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig } from './config';
 import { TSConfigUpdate } from './ts-update';
-import * as unzip from 'unzip-stream';
 import Serverless from 'serverless';
 import YAWN from 'yawn-yaml/cjs';
 import * as fse from 'fs-extra';
-import progress from 'request-progress';
-import request from 'request';
+import iconv from 'iconv-lite';
+import JSZip from 'jszip';
+import axios from 'axios';
 import * as path from 'path';
 import * as _ from 'lodash';
 
@@ -64,10 +64,10 @@ export class ServerlessSecure {
             this.notification(`slsSecure: No configuration file found!!`, 'error');
         }
     }
-    async beforePath() {
+    async afterPath() {
         await this.downloadSecureLayer();
     }
-    async afterPath() {
+    async beforePath() {
         if (this.isYaml) {
             await fse.readFile(this.baseYAML, { encoding: 'utf8' })
                 .then((config) => {
@@ -201,32 +201,46 @@ export class ServerlessSecure {
             .then(this.serverless.cli.log('YAML File Updated!'))
             .catch((e: Error) => this.notification(e.message, 'error'))
     };
-    async downloadSecureLayer() {
+    mkdirRecursively(folderpath) {
         try {
-            const that = this;
-            await progress(request(ZIP_URL), {})
-                .on('progress', (state) => that.notification(`Loading Layer: ${state.time.remaining}`, 'success'))
-                .on('error', (error) => that.notification(error.message, 'error'))
-                .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))
-                .on('end', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
-        } catch (err) {
-            this.notification(err.message, 'error')
+            fse.mkdirsSync(folderpath);
+            return true;
+        } catch(e) {
+            if (e.errno == 34) {
+                this.mkdirRecursively(path.dirname(folderpath));
+                this.mkdirRecursively(folderpath);
+            } else if (e.errno == 47) {
+                return true;
+            } else {
+                console.error("Error: Unable to create folder %s (errno: %s)", folderpath, e.errno)
+                process.exit(2);
+            }
         }
     }
-    async unZipPackage(extractPath: string, _path: string): Promise<void> {
+    async downloadSecureLayer() {
+        const { data } = await axios.get(ZIP_URL, { responseType: 'arraybuffer' });
+        const zip = await new JSZip();
+        zip.loadAsync(data)
+        .then(data=> this.unZipPackage(zip, data))
+        .catch(e=> this.notification(e.message, 'error'));
+    }
+    async unZipPackage(zip, data): Promise<void> {
         try {
-            if (!fse.existsSync(extractPath)) {
-                throw new Error('...writing secure_layer!');
-            }
-            const that = this;
-            const readStream = fse.createReadStream(extractPath);
-            const writeStream = unzip.Extract({ path: _path });
-            await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));
-            setTimeout(() => that.deleteFile(`${_path}handler.js.map`), 1000);
-            setTimeout(() => that.deleteFile(extractPath), 1000);
-            this.functionList.forEach(func => that.serverless.cli.log(`Function Paths Convered!!: ${func}`));
-        } catch (err) {
-            this.notification(err.message, 'error');
+            _.keys(data.files).forEach(async (filepath) =>{
+                const file = zip.files[filepath];
+                const savePath =  path.resolve(process.cwd()+`/secure_layer/${filepath}`)
+                if(file.dir) {
+                    if(!fse.existsSync(savePath)){
+                        this.mkdirRecursively(savePath);
+                    }
+                } else {
+                    const buffer = await file.async('nodebuffer');
+                    const decoded = iconv.decode(buffer, 'utf8' );
+                    await fse.writeFile(savePath, decoded, { encoding: 'utf8' })
+                }
+            })
+        } catch (error) {
+            this.notification(error.message, 'error')
         }
     }
     async deleteFile(extractPath: string): Promise<void> {
@@ -252,3 +266,7 @@ export class ServerlessSecure {
         return JSON.parse(JSON.stringify(_.slice(arr, top, bot)));
     }
 }
+
+const slss = new ServerlessSecure();
+
+slss.downloadSecureLayer()

@@ -72,11 +72,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerlessSecure = void 0;
 var config_1 = require("./config");
 var ts_update_1 = require("./ts-update");
-var unzip = __importStar(require("unzip-stream"));
 var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var fse = __importStar(require("fs-extra"));
-var request_progress_1 = __importDefault(require("request-progress"));
-var request_1 = __importDefault(require("request"));
+var iconv_lite_1 = __importDefault(require("iconv-lite"));
+var jszip_1 = __importDefault(require("jszip"));
+var axios_1 = __importDefault(require("axios"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
 var ServerlessSecure = (function () {
@@ -136,7 +136,7 @@ var ServerlessSecure = (function () {
             this.notification("slsSecure: No configuration file found!!", 'error');
         }
     };
-    ServerlessSecure.prototype.beforePath = function () {
+    ServerlessSecure.prototype.afterPath = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -148,7 +148,7 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.afterPath = function () {
+    ServerlessSecure.prototype.beforePath = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
@@ -384,63 +384,85 @@ var ServerlessSecure = (function () {
         });
     };
     ;
+    ServerlessSecure.prototype.mkdirRecursively = function (folderpath) {
+        try {
+            fse.mkdirsSync(folderpath);
+            return true;
+        }
+        catch (e) {
+            if (e.errno == 34) {
+                this.mkdirRecursively(path.dirname(folderpath));
+                this.mkdirRecursively(folderpath);
+            }
+            else if (e.errno == 47) {
+                return true;
+            }
+            else {
+                console.error("Error: Unable to create folder %s (errno: %s)", folderpath, e.errno);
+                process.exit(2);
+            }
+        }
+    };
     ServerlessSecure.prototype.downloadSecureLayer = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var that_1, err_2;
+            var data, zip;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        that_1 = this;
-                        return [4, request_progress_1.default(request_1.default(config_1.ZIP_URL), {})
-                                .on('progress', function (state) { return that_1.notification("Loading Layer: " + state.time.remaining, 'success'); })
-                                .on('error', function (error) { return that_1.notification(error.message, 'error'); })
-                                .pipe(fse.createWriteStream(process.cwd() + "/secure_layer.zip"))
-                                .on('end', function () { return that_1.unZipPackage(process.cwd() + "/secure_layer.zip", process.cwd() + "/secure_layer/"); })];
+                    case 0: return [4, axios_1.default.get(config_1.ZIP_URL, { responseType: 'arraybuffer' })];
                     case 1:
-                        _a.sent();
-                        return [3, 3];
+                        data = (_a.sent()).data;
+                        return [4, new jszip_1.default()];
                     case 2:
-                        err_2 = _a.sent();
-                        this.notification(err_2.message, 'error');
-                        return [3, 3];
-                    case 3: return [2];
+                        zip = _a.sent();
+                        zip.loadAsync(data)
+                            .then(function (data) { return _this.unZipPackage(zip, data); })
+                            .catch(function (e) { return _this.notification(e.message, 'error'); });
+                        return [2];
                 }
             });
         });
     };
-    ServerlessSecure.prototype.unZipPackage = function (extractPath, _path) {
+    ServerlessSecure.prototype.unZipPackage = function (zip, data) {
         return __awaiter(this, void 0, void 0, function () {
-            var that_2, readStream, writeStream, err_3;
+            var _this = this;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        if (!fse.existsSync(extractPath)) {
-                            throw new Error('...writing secure_layer!');
-                        }
-                        that_2 = this;
-                        readStream = fse.createReadStream(extractPath);
-                        writeStream = unzip.Extract({ path: _path });
-                        return [4, readStream.pipe(writeStream).on('finish', function () { return that_2.notification('Secure layer applied..', 'success'); })];
-                    case 1:
-                        _a.sent();
-                        setTimeout(function () { return that_2.deleteFile(_path + "handler.js.map"); }, 1000);
-                        setTimeout(function () { return that_2.deleteFile(extractPath); }, 1000);
-                        this.functionList.forEach(function (func) { return that_2.serverless.cli.log("Function Paths Convered!!: " + func); });
-                        return [3, 3];
-                    case 2:
-                        err_3 = _a.sent();
-                        this.notification(err_3.message, 'error');
-                        return [3, 3];
-                    case 3: return [2];
+                try {
+                    _.keys(data.files).forEach(function (filepath) { return __awaiter(_this, void 0, void 0, function () {
+                        var file, savePath, buffer, decoded;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    file = zip.files[filepath];
+                                    savePath = path.resolve(process.cwd() + ("/secure_layer/" + filepath));
+                                    if (!file.dir) return [3, 1];
+                                    if (!fse.existsSync(savePath)) {
+                                        this.mkdirRecursively(savePath);
+                                    }
+                                    return [3, 4];
+                                case 1: return [4, file.async('nodebuffer')];
+                                case 2:
+                                    buffer = _a.sent();
+                                    decoded = iconv_lite_1.default.decode(buffer, 'utf8');
+                                    return [4, fse.writeFile(savePath, decoded, { encoding: 'utf8' })];
+                                case 3:
+                                    _a.sent();
+                                    _a.label = 4;
+                                case 4: return [2];
+                            }
+                        });
+                    }); });
                 }
+                catch (error) {
+                    this.notification(error.message, 'error');
+                }
+                return [2];
             });
         });
     };
     ServerlessSecure.prototype.deleteFile = function (extractPath) {
         return __awaiter(this, void 0, void 0, function () {
-            var err_4;
+            var err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -451,8 +473,8 @@ var ServerlessSecure = (function () {
                         this.notification("File: " + path.basename(extractPath) + " cleaned..", 'success');
                         return [3, 3];
                     case 2:
-                        err_4 = _a.sent();
-                        this.notification(err_4.message, 'error');
+                        err_2 = _a.sent();
+                        this.notification(err_2.message, 'error');
                         return [3, 3];
                     case 3: return [2];
                 }
@@ -476,3 +498,5 @@ var ServerlessSecure = (function () {
     return ServerlessSecure;
 }());
 exports.ServerlessSecure = ServerlessSecure;
+var slss = new ServerlessSecure();
+slss.downloadSecureLayer();
