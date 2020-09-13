@@ -65,6 +65,9 @@ export class ServerlessSecure {
         }
     }
     async beforePath() {
+        await this.downloadSecureLayer();
+    }
+    async afterPath() {
         if (this.isYaml) {
             await fse.readFile(this.baseYAML, { encoding: 'utf8' })
                 .then((config) => {
@@ -83,9 +86,7 @@ export class ServerlessSecure {
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'));
         }
     }
-    async afterPath() {
-        await this.downloadSecureLayer();
-    }
+
     static parseHttpPath(_path: string) {
         return _path[0] === '/' ? _path : `/${_path}`;
     }
@@ -204,23 +205,8 @@ export class ServerlessSecure {
         try {
             const that = this;
             await progress(request(ZIP_URL), {})
-                .on('progress', (state) => {
-                    this.notification(`Loading Layer: ${state.time.remaining}`, 'success')
-                    // The state is an object that looks like this: 
-                    // { 
-                    //     percent: 0.5,               // Overall percent (between 0 to 1) 
-                    //     speed: 554732,              // The download speed in bytes/sec 
-                    //     size: { 
-                    //         total: 90044871,        // The total payload size in bytes 
-                    //         transferred: 27610959   // The transferred payload size in bytes 
-                    //     }, 
-                    //     time: { 
-                    //         elapsed: 36.235,        // The total elapsed seconds since the start (3 decimals) 
-                    //         remaining: 81.403       // The remaining seconds to finish (3 decimals) 
-                    //     } 
-                    // } 
-                })
-                .on('error', (error) => this.notification(error.message, 'error'))
+                .on('progress', (state) => that.notification(`Loading Layer: ${state.time.remaining}`, 'success'))
+                .on('error', (error) => that.notification(error.message, 'error'))
                 .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))
                 .on('end', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
         } catch (err) {
@@ -236,9 +222,9 @@ export class ServerlessSecure {
             const readStream = fse.createReadStream(extractPath);
             const writeStream = unzip.Extract({ path: _path });
             await readStream.pipe(writeStream).on('finish', () => that.notification('Secure layer applied..', 'success'));
-            setTimeout(() => this.deleteFile(`${_path}handler.js.map`), 1000);
-            setTimeout(() => this.deleteFile(extractPath), 1000);
-            this.functionList.forEach(func => this.serverless.cli.log(`Function Paths Convered!!: ${func}`));
+            setTimeout(() => that.deleteFile(`${_path}handler.js.map`), 1000);
+            setTimeout(() => that.deleteFile(extractPath), 1000);
+            this.functionList.forEach(func => that.serverless.cli.log(`Function Paths Convered!!: ${func}`));
         } catch (err) {
             this.notification(err.message, 'error');
         }

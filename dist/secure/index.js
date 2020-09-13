@@ -138,6 +138,18 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.beforePath = function () {
         return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.downloadSecureLayer()];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        });
+    };
+    ServerlessSecure.prototype.afterPath = function () {
+        return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -164,18 +176,6 @@ var ServerlessSecure = (function () {
                         _a.sent();
                         _a.label = 4;
                     case 4: return [2];
-                }
-            });
-        });
-    };
-    ServerlessSecure.prototype.afterPath = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.downloadSecureLayer()];
-                    case 1:
-                        _a.sent();
-                        return [2];
                 }
             });
         });
@@ -387,17 +387,14 @@ var ServerlessSecure = (function () {
     ServerlessSecure.prototype.downloadSecureLayer = function () {
         return __awaiter(this, void 0, void 0, function () {
             var that_1, err_2;
-            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         that_1 = this;
                         return [4, request_progress_1.default(request_1.default(config_1.ZIP_URL), {})
-                                .on('progress', function (state) {
-                                _this.notification("Loading Layer: " + state.time.remaining, 'success');
-                            })
-                                .on('error', function (error) { return _this.notification(error.message, 'error'); })
+                                .on('progress', function (state) { return that_1.notification("Loading Layer: " + state.time.remaining, 'success'); })
+                                .on('error', function (error) { return that_1.notification(error.message, 'error'); })
                                 .pipe(fse.createWriteStream(process.cwd() + "/secure_layer.zip"))
                                 .on('end', function () { return that_1.unZipPackage(process.cwd() + "/secure_layer.zip", process.cwd() + "/secure_layer/"); })];
                     case 1:
@@ -415,7 +412,6 @@ var ServerlessSecure = (function () {
     ServerlessSecure.prototype.unZipPackage = function (extractPath, _path) {
         return __awaiter(this, void 0, void 0, function () {
             var that_2, readStream, writeStream, err_3;
-            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -429,9 +425,9 @@ var ServerlessSecure = (function () {
                         return [4, readStream.pipe(writeStream).on('finish', function () { return that_2.notification('Secure layer applied..', 'success'); })];
                     case 1:
                         _a.sent();
-                        setTimeout(function () { return _this.deleteFile(_path + "handler.js.map"); }, 1000);
-                        setTimeout(function () { return _this.deleteFile(extractPath); }, 1000);
-                        this.functionList.forEach(function (func) { return _this.serverless.cli.log("Function Paths Convered!!: " + func); });
+                        setTimeout(function () { return that_2.deleteFile(_path + "handler.js.map"); }, 1000);
+                        setTimeout(function () { return that_2.deleteFile(extractPath); }, 1000);
+                        this.functionList.forEach(function (func) { return that_2.serverless.cli.log("Function Paths Convered!!: " + func); });
                         return [3, 3];
                     case 2:
                         err_3 = _a.sent();
