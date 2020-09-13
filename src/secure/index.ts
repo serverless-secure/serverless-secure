@@ -4,7 +4,7 @@ import * as unzip from 'unzip-stream';
 import Serverless from 'serverless';
 import YAWN from 'yawn-yaml/cjs';
 import * as fse from 'fs-extra';
-import request from 'request';
+import download from 'download';
 import * as path from 'path';
 import * as _ from 'lodash';
 
@@ -202,7 +202,7 @@ export class ServerlessSecure {
     async downloadSecureLayer() {
         try {
             const that = this;
-            await request
+            await download(ZIP_URL)
                 .get(ZIP_URL)
                 .on('error', (error) => this.notification(error.message, 'error'))
                 .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))

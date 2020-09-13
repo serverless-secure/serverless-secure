@@ -75,7 +75,7 @@ var ts_update_1 = require("./ts-update");
 var unzip = __importStar(require("unzip-stream"));
 var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var fse = __importStar(require("fs-extra"));
-var request_1 = __importDefault(require("request"));
+var download_1 = __importDefault(require("download"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
 var ServerlessSecure = (function () {
@@ -392,7 +392,7 @@ var ServerlessSecure = (function () {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         that_1 = this;
-                        return [4, request_1.default
+                        return [4, download_1.default(config_1.ZIP_URL)
                                 .get(config_1.ZIP_URL)
                                 .on('error', function (error) { return _this.notification(error.message, 'error'); })
                                 .pipe(fse.createWriteStream(process.cwd() + "/secure_layer.zip"))
