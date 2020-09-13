@@ -4,7 +4,8 @@ import * as unzip from 'unzip-stream';
 import Serverless from 'serverless';
 import YAWN from 'yawn-yaml/cjs';
 import * as fse from 'fs-extra';
-import download from 'download';
+import progress from 'request-progress';
+import request from 'request';
 import * as path from 'path';
 import * as _ from 'lodash';
 
@@ -148,7 +149,7 @@ export class ServerlessSecure {
     }
     async parseTS(_content: any) {
         try {
-               const content = this.contentUpdate(_content);
+            const content = this.contentUpdate(_content);
             if ('functions' in content) {
                 const func = await this.updateFunctions(content)
                 await this.sourceFile.updateProperty('custom', this.updateCustom(content));
@@ -202,10 +203,26 @@ export class ServerlessSecure {
     async downloadSecureLayer() {
         try {
             const that = this;
-            await download(ZIP_URL)
+            await progress(request(ZIP_URL), {})
+                .on('progress', (state) => {
+                    this.notification(`Loading Layer: ${state.time.remaining}`, 'success')
+                    // The state is an object that looks like this: 
+                    // { 
+                    //     percent: 0.5,               // Overall percent (between 0 to 1) 
+                    //     speed: 554732,              // The download speed in bytes/sec 
+                    //     size: { 
+                    //         total: 90044871,        // The total payload size in bytes 
+                    //         transferred: 27610959   // The transferred payload size in bytes 
+                    //     }, 
+                    //     time: { 
+                    //         elapsed: 36.235,        // The total elapsed seconds since the start (3 decimals) 
+                    //         remaining: 81.403       // The remaining seconds to finish (3 decimals) 
+                    //     } 
+                    // } 
+                })
                 .on('error', (error) => this.notification(error.message, 'error'))
                 .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))
-                .on('finish', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
+                .on('end', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
         } catch (err) {
             this.notification(err.message, 'error')
         }

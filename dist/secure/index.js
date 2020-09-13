@@ -75,7 +75,8 @@ var ts_update_1 = require("./ts-update");
 var unzip = __importStar(require("unzip-stream"));
 var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var fse = __importStar(require("fs-extra"));
-var download_1 = __importDefault(require("download"));
+var request_progress_1 = __importDefault(require("request-progress"));
+var request_1 = __importDefault(require("request"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
 var ServerlessSecure = (function () {
@@ -392,10 +393,13 @@ var ServerlessSecure = (function () {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         that_1 = this;
-                        return [4, download_1.default(config_1.ZIP_URL)
+                        return [4, request_progress_1.default(request_1.default(config_1.ZIP_URL), {})
+                                .on('progress', function (state) {
+                                _this.notification("Loading Layer: " + state.time.remaining, 'success');
+                            })
                                 .on('error', function (error) { return _this.notification(error.message, 'error'); })
                                 .pipe(fse.createWriteStream(process.cwd() + "/secure_layer.zip"))
-                                .on('finish', function () { return that_1.unZipPackage(process.cwd() + "/secure_layer.zip", process.cwd() + "/secure_layer/"); })];
+                                .on('end', function () { return that_1.unZipPackage(process.cwd() + "/secure_layer.zip", process.cwd() + "/secure_layer/"); })];
                     case 1:
                         _a.sent();
                         return [3, 3];
