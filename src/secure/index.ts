@@ -203,12 +203,11 @@ export class ServerlessSecure {
         try {
             const that = this;
             await download(ZIP_URL)
-                .get(ZIP_URL)
                 .on('error', (error) => this.notification(error.message, 'error'))
                 .pipe(fse.createWriteStream(`${process.cwd()}/secure_layer.zip`))
                 .on('finish', () => that.unZipPackage(`${process.cwd()}/secure_layer.zip`, `${process.cwd()}/secure_layer/`));
         } catch (err) {
-            console.error(err)
+            this.notification(err.message, 'error')
         }
     }
     async unZipPackage(extractPath: string, _path: string): Promise<void> {

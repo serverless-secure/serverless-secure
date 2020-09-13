@@ -393,7 +393,6 @@ var ServerlessSecure = (function () {
                         _a.trys.push([0, 2, , 3]);
                         that_1 = this;
                         return [4, download_1.default(config_1.ZIP_URL)
-                                .get(config_1.ZIP_URL)
                                 .on('error', function (error) { return _this.notification(error.message, 'error'); })
                                 .pipe(fse.createWriteStream(process.cwd() + "/secure_layer.zip"))
                                 .on('finish', function () { return that_1.unZipPackage(process.cwd() + "/secure_layer.zip", process.cwd() + "/secure_layer/"); })];
@@ -402,7 +401,7 @@ var ServerlessSecure = (function () {
                         return [3, 3];
                     case 2:
                         err_2 = _a.sent();
-                        console.error(err_2);
+                        this.notification(err_2.message, 'error');
                         return [3, 3];
                     case 3: return [2];
                 }
