@@ -2,6 +2,7 @@ import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig } from './con
 import { TSConfigUpdate } from './ts-update';
 import Serverless from 'serverless';
 import YAWN from 'yawn-yaml/cjs';
+
 import * as fse from 'fs-extra';
 import iconv from 'iconv-lite';
 import JSZip from 'jszip';
@@ -21,6 +22,7 @@ export class ServerlessSecure {
     public options: { path: string; p: string; };
     private baseTS = path.join(process.cwd(), 'serverless.ts');
     private baseYAML = path.join(process.cwd(), 'serverless.yml');
+    private baseLayer = path.join(process.cwd(), './secure_layer');
 
     constructor(serverless?: Serverless, options?: any) {
         this.options = options;
@@ -65,7 +67,15 @@ export class ServerlessSecure {
         }
     }
     async afterPath() {
-        await this.downloadSecureLayer();
+        try {
+            const baseExists = await fse.existsSync(this.baseLayer);
+            if (baseExists) {
+                await this.deleteFolder(this.baseLayer)
+            }
+            await this.downloadSecureLayer();
+        } catch (error) {
+            this.notification(`AfterPath error: ${error.message}`, 'error')
+        }
     }
     async beforePath() {
         if (this.isYaml) {
@@ -86,7 +96,6 @@ export class ServerlessSecure {
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'));
         }
     }
-
     static parseHttpPath(_path: string) {
         return _path[0] === '/' ? _path : `/${_path}`;
     }
@@ -119,29 +128,31 @@ export class ServerlessSecure {
         }
         return _.uniq(provider['apiKeys']);
     }
+    async setOptions(ele) {
 
+        const events = ele['events'] || [];
+        if ('name' in events) {
+            delete ele['events']['name'];
+        }
+        await _.map(events, (res: any) => {
+            if (res && 'http' in res) {
+                res.http['cors'] = '${self:custom.corsValue}';
+                if (!res['private'] || res['private'] !== true) {
+                    res.http['authorizer'] = 'secureAuthorizer';
+                }
+            }
+        })
+    }
     async updateFunctions(content: { [x: string]: any; }) {
         const opath = this.options.path || this.options.p
-        await _.mapValues(content['functions'], (ele, item) => {
+        await _.mapValues(content['functions'], async (ele, item) => {
             if (opath === '.' || opath === item) {
                 this.functionList.push(item);
-                const events = ele['events'] || [];
-                if ('name' in events) {
-                    delete ele['events']['name'];
-                }
-                _.map(events, (res: any) => {
-                    if (res && 'http' in res) {
-                        res.http['cors'] = '${self:custom.corsValue}';
-                        if (!res['private'] || res['private'] !== true) {
-                            res.http['authorizer'] = 'secureAuthorizer';
-                        }
-                    }
-                })
+                await this.setOptions(ele)
             }
         });
         return _.assign({}, content['functions'], secureConfig);
     }
-
     contentUpdate(_content: any) {
         const content = _content;
         content['provider']['apiKeys'] = this.updateApiKeys(content);
@@ -205,37 +216,37 @@ export class ServerlessSecure {
         try {
             fse.mkdirsSync(folderpath);
             return true;
-        } catch(e) {
-            if (e.errno == 34) {
+        } catch (e) {
+            if (e.errno === 34) {
                 this.mkdirRecursively(path.dirname(folderpath));
                 this.mkdirRecursively(folderpath);
-            } else if (e.errno == 47) {
+            } else if (e.errno === 47) {
                 return true;
             } else {
-                console.error("Error: Unable to create folder %s (errno: %s)", folderpath, e.errno)
+                console.error('Error: Unable to create folder %s (errno: %s)', folderpath, e.errno)
                 process.exit(2);
             }
         }
     }
     async downloadSecureLayer() {
         const { data } = await axios.get(ZIP_URL, { responseType: 'arraybuffer' });
-        const zip = await new JSZip();
-        zip.loadAsync(data)
-        .then(data=> this.unZipPackage(zip, data))
-        .catch(e=> this.notification(e.message, 'error'));
+        const zip = new JSZip();
+        await zip.loadAsync(data)
+            .then(content => this.unZipPackage(zip, content))
+            .catch(e => this.notification(e.message, 'error'));
     }
     async unZipPackage(zip, data): Promise<void> {
         try {
-            _.keys(data.files).forEach(async (filepath) =>{
+            _.keys(data.files).forEach(async (filepath) => {
                 const file = zip.files[filepath];
-                const savePath =  path.resolve(process.cwd()+`/secure_layer/${filepath}`)
-                if(file.dir) {
-                    if(!fse.existsSync(savePath)){
+                const savePath = path.resolve(process.cwd() + `/secure_layer/${filepath}`)
+                if (file.dir) {
+                    if (!fse.existsSync(savePath)) {
                         this.mkdirRecursively(savePath);
                     }
                 } else {
                     const buffer = await file.async('nodebuffer');
-                    const decoded = iconv.decode(buffer, 'utf8' );
+                    const decoded = iconv.decode(buffer, 'utf8');
                     await fse.writeFile(savePath, decoded, { encoding: 'utf8' })
                 }
             })
@@ -243,10 +254,10 @@ export class ServerlessSecure {
             this.notification(error.message, 'error')
         }
     }
-    async deleteFile(extractPath: string): Promise<void> {
+    async deleteFolder(extractPath: string): Promise<void> {
         try {
-            await fse.remove(extractPath);
-            this.notification(`File: ${path.basename(extractPath)} cleaned..`, 'success')
+            await fse.removeSync(extractPath);
+            this.notification(`Folder: ${extractPath} removed..`, 'success')
         } catch (err) {
             this.notification(err.message, 'error')
         }
@@ -267,6 +278,6 @@ export class ServerlessSecure {
     }
 }
 
-const slss = new ServerlessSecure();
+// const slss = new ServerlessSecure();
 
-slss.downloadSecureLayer()
+// slss.downloadSecureLayer()

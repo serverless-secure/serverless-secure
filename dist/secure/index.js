@@ -85,6 +85,7 @@ var ServerlessSecure = (function () {
         this.functionList = [];
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
+        this.baseLayer = path.join(process.cwd(), './secure_layer');
         this.options = options;
         this.serverless = serverless;
         this.hooks = {
@@ -138,12 +139,28 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.afterPath = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var baseExists, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.downloadSecureLayer()];
+                    case 0:
+                        _a.trys.push([0, 5, , 6]);
+                        return [4, fse.existsSync(this.baseLayer)];
                     case 1:
+                        baseExists = _a.sent();
+                        if (!baseExists) return [3, 3];
+                        return [4, this.deleteFolder(this.baseLayer)];
+                    case 2:
                         _a.sent();
-                        return [2];
+                        _a.label = 3;
+                    case 3: return [4, this.downloadSecureLayer()];
+                    case 4:
+                        _a.sent();
+                        return [3, 6];
+                    case 5:
+                        error_1 = _a.sent();
+                        this.notification("AfterPath error: " + error_1.message, 'error');
+                        return [3, 6];
+                    case 6: return [2];
                 }
             });
         });
@@ -226,6 +243,31 @@ var ServerlessSecure = (function () {
         }
         return _.uniq(provider['apiKeys']);
     };
+    ServerlessSecure.prototype.setOptions = function (ele) {
+        return __awaiter(this, void 0, void 0, function () {
+            var events;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        events = ele['events'] || [];
+                        if ('name' in events) {
+                            delete ele['events']['name'];
+                        }
+                        return [4, _.map(events, function (res) {
+                                if (res && 'http' in res) {
+                                    res.http['cors'] = '${self:custom.corsValue}';
+                                    if (!res['private'] || res['private'] !== true) {
+                                        res.http['authorizer'] = 'secureAuthorizer';
+                                    }
+                                }
+                            })];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        });
+    };
     ServerlessSecure.prototype.updateFunctions = function (content) {
         return __awaiter(this, void 0, void 0, function () {
             var opath;
@@ -234,23 +276,20 @@ var ServerlessSecure = (function () {
                 switch (_a.label) {
                     case 0:
                         opath = this.options.path || this.options.p;
-                        return [4, _.mapValues(content['functions'], function (ele, item) {
-                                if (opath === '.' || opath === item) {
-                                    _this.functionList.push(item);
-                                    var events = ele['events'] || [];
-                                    if ('name' in events) {
-                                        delete ele['events']['name'];
+                        return [4, _.mapValues(content['functions'], function (ele, item) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            if (!(opath === '.' || opath === item)) return [3, 2];
+                                            this.functionList.push(item);
+                                            return [4, this.setOptions(ele)];
+                                        case 1:
+                                            _a.sent();
+                                            _a.label = 2;
+                                        case 2: return [2];
                                     }
-                                    _.map(events, function (res) {
-                                        if (res && 'http' in res) {
-                                            res.http['cors'] = '${self:custom.corsValue}';
-                                            if (!res['private'] || res['private'] !== true) {
-                                                res.http['authorizer'] = 'secureAuthorizer';
-                                            }
-                                        }
-                                    });
-                                }
-                            })];
+                                });
+                            }); })];
                     case 1:
                         _a.sent();
                         return [2, _.assign({}, content['functions'], config_1.secureConfig)];
@@ -266,7 +305,7 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.parseTS = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, func, error_1;
+            var content, func, error_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -294,8 +333,8 @@ var ServerlessSecure = (function () {
                         return [2, content];
                     case 7: return [3, 9];
                     case 8:
-                        error_1 = _a.sent();
-                        this.notification(error_1.message, 'error');
+                        error_2 = _a.sent();
+                        this.notification(error_2.message, 'error');
                         return [3, 9];
                     case 9: return [2];
                 }
@@ -304,7 +343,7 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.parseYAML = function (_content) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, _c, _d, error_2;
+            var content, _a, _b, _c, _d, error_3;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
@@ -331,8 +370,8 @@ var ServerlessSecure = (function () {
                     case 5: return [2, content];
                     case 6: return [3, 8];
                     case 7:
-                        error_2 = _e.sent();
-                        this.notification(error_2.message, 'error');
+                        error_3 = _e.sent();
+                        this.notification(error_3.message, 'error');
                         return [3, 8];
                     case 8: return [2, _content];
                 }
@@ -390,15 +429,15 @@ var ServerlessSecure = (function () {
             return true;
         }
         catch (e) {
-            if (e.errno == 34) {
+            if (e.errno === 34) {
                 this.mkdirRecursively(path.dirname(folderpath));
                 this.mkdirRecursively(folderpath);
             }
-            else if (e.errno == 47) {
+            else if (e.errno === 47) {
                 return true;
             }
             else {
-                console.error("Error: Unable to create folder %s (errno: %s)", folderpath, e.errno);
+                console.error('Error: Unable to create folder %s (errno: %s)', folderpath, e.errno);
                 process.exit(2);
             }
         }
@@ -412,12 +451,12 @@ var ServerlessSecure = (function () {
                     case 0: return [4, axios_1.default.get(config_1.ZIP_URL, { responseType: 'arraybuffer' })];
                     case 1:
                         data = (_a.sent()).data;
-                        return [4, new jszip_1.default()];
+                        zip = new jszip_1.default();
+                        return [4, zip.loadAsync(data)
+                                .then(function (content) { return _this.unZipPackage(zip, content); })
+                                .catch(function (e) { return _this.notification(e.message, 'error'); })];
                     case 2:
-                        zip = _a.sent();
-                        zip.loadAsync(data)
-                            .then(function (data) { return _this.unZipPackage(zip, data); })
-                            .catch(function (e) { return _this.notification(e.message, 'error'); });
+                        _a.sent();
                         return [2];
                 }
             });
@@ -460,17 +499,17 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.deleteFile = function (extractPath) {
+    ServerlessSecure.prototype.deleteFolder = function (extractPath) {
         return __awaiter(this, void 0, void 0, function () {
             var err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4, fse.remove(extractPath)];
+                        return [4, fse.removeSync(extractPath)];
                     case 1:
                         _a.sent();
-                        this.notification("File: " + path.basename(extractPath) + " cleaned..", 'success');
+                        this.notification("Folder: " + extractPath + " removed..", 'success');
                         return [3, 3];
                     case 2:
                         err_2 = _a.sent();
@@ -498,5 +537,3 @@ var ServerlessSecure = (function () {
     return ServerlessSecure;
 }());
 exports.ServerlessSecure = ServerlessSecure;
-var slss = new ServerlessSecure();
-slss.downloadSecureLayer();

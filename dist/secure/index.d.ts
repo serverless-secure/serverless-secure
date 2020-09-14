@@ -16,6 +16,7 @@ export declare class ServerlessSecure {
     };
     private baseTS;
     private baseYAML;
+    private baseLayer;
     constructor(serverless?: Serverless, options?: any);
     apply(): Promise<void>;
     beforeFile(): void;
@@ -35,6 +36,7 @@ export declare class ServerlessSecure {
     updateApiKeys(content: {
         provider: any;
     }): unknown[];
+    setOptions(ele: any): Promise<void>;
     updateFunctions(content: {
         [x: string]: any;
     }): Promise<any>;
@@ -47,7 +49,7 @@ export declare class ServerlessSecure {
     mkdirRecursively(folderpath: any): boolean;
     downloadSecureLayer(): Promise<void>;
     unZipPackage(zip: any, data: any): Promise<void>;
-    deleteFile(extractPath: string): Promise<void>;
+    deleteFolder(extractPath: string): Promise<void>;
     notification(message: string, type: string): void;
     parseFile(arr: _.List<unknown> | null | undefined, top: number | undefined, bot: number | undefined): any;
 }
