@@ -63,7 +63,7 @@ export class ServerlessSecure {
         } catch (error) {
             this.notification(`AfterPath error: ${error.message}`, 'error')
         }
-        this.notification(`Secure cover applied &#9748`, 'success');
+        this.notification(`Secure cover applied ☔`, 'success');
     }
     async beforePath() {
         if (this.isYaml) {
@@ -83,7 +83,6 @@ export class ServerlessSecure {
                 })
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'));
         }
-        
     }
     static parseHttpPath(_path: string) {
         return _path[0] === '/' ? _path : `/${_path}`;

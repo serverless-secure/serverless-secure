@@ -149,7 +149,7 @@ var ServerlessSecure = (function () {
                         this.notification("AfterPath error: " + error_1.message, 'error');
                         return [3, 6];
                     case 6:
-                        this.notification("Secure cover applied &#9748", 'success');
+                        this.notification("Secure cover applied \u2614", 'success');
                         return [2];
                 }
             });
