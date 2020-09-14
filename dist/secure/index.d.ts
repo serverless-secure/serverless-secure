@@ -4,9 +4,9 @@ export declare class ServerlessSecure {
     private yawn;
     hooks: object;
     private isYaml;
+    private ApiKey;
     commands: object;
     private content;
-    private ApiKey;
     private serverless;
     private sourceFile;
     private functionList;

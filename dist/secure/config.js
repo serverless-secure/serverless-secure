@@ -63,22 +63,22 @@ exports.slsCommands = {
         }
     },
     encrypt: {
-        usage: 'How to secure your lambdas',
+        usage: 'How to encrypt your lambdas',
         lifecycleEvents: ['init', 'create'],
         options: {
             path: {
-                usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
+                usage: 'Specify what function you wish to encrypt: --path <Function Name> or -p <*>',
                 required: false,
                 shortcut: 'p',
             },
         }
     },
     monitor: {
-        usage: 'How to secure your lambdas',
+        usage: 'How to monitor your lambdas',
         lifecycleEvents: ['init', 'create'],
         options: {
             path: {
-                usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
+                usage: 'Specify what function you wish to monitor: --path <Function Name> or -p <*>',
                 required: false,
                 shortcut: 'p',
             },

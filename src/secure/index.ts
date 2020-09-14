@@ -13,9 +13,9 @@ export class ServerlessSecure {
     private yawn: YAWN;
     public hooks: object;
     private isYaml = false;
+    private ApiKey: string;
     public commands: object;
     private content!: string;
-    private ApiKey: string = 'MySecureKey'
     private serverless: Serverless;
     private sourceFile!: TSConfigUpdate;
     private functionList: string[] = [];
@@ -55,7 +55,7 @@ export class ServerlessSecure {
     }
     async afterPath() {
         try {
-            const baseExists = await fse.existsSync(this.baseLayer);
+            const baseExists = await this.pathExists(this.baseLayer);
             if (baseExists) {
                 await this.deleteFolder(this.baseLayer)
             }
@@ -63,6 +63,7 @@ export class ServerlessSecure {
         } catch (error) {
             this.notification(`AfterPath error: ${error.message}`, 'error')
         }
+        this.notification(`Secure cover applied &#9748`, 'success');
     }
     async beforePath() {
         if (this.isYaml) {
@@ -82,6 +83,7 @@ export class ServerlessSecure {
                 })
                 .catch((err: any) => this.notification(`Error while reading file:\n\n%s ${String(err)}`, 'error'));
         }
+        
     }
     static parseHttpPath(_path: string) {
         return _path[0] === '/' ? _path : `/${_path}`;
@@ -156,7 +158,7 @@ export class ServerlessSecure {
                 await this.sourceFile.updateProperty('layers', this.updateLayers(content));
                 await this.sourceFile.updateProperty('provider', content['provider']);
                 await this.sourceFile.updateProperty('functions', func);
-                await this.writeTS(this.sourceFile); 
+                await this.writeTS(this.sourceFile);
             }
             return content;
         } catch (error) {
@@ -220,7 +222,6 @@ export class ServerlessSecure {
         const zip = new JSZip();
         const URL = `${ZIP_URL}pullzip?key=${this.ApiKey}`;
         const { data } = await axios.get(URL, { responseType: 'arraybuffer' });
-        
         await zip.loadAsync(data)
             .then(content => this.unZipPackage(zip, content))
             .catch(e => this.notification(e.message, 'error'));
@@ -247,7 +248,7 @@ export class ServerlessSecure {
     async deleteFolder(extractPath: string): Promise<void> {
         try {
             await fse.removeSync(extractPath);
-            this.notification(`Folder: ${extractPath} removed..`, 'success')
+            this.notification(`Folder: ${extractPath} updated..!`, 'success')
         } catch (err) {
             this.notification(err.message, 'error')
         }

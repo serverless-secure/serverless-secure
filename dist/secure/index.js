@@ -82,7 +82,6 @@ var _ = __importStar(require("lodash"));
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.isYaml = false;
-        this.ApiKey = 'MySecureKey';
         this.functionList = [];
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
@@ -133,7 +132,7 @@ var ServerlessSecure = (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 5, , 6]);
-                        return [4, fse.existsSync(this.baseLayer)];
+                        return [4, this.pathExists(this.baseLayer)];
                     case 1:
                         baseExists = _a.sent();
                         if (!baseExists) return [3, 3];
@@ -149,7 +148,9 @@ var ServerlessSecure = (function () {
                         error_1 = _a.sent();
                         this.notification("AfterPath error: " + error_1.message, 'error');
                         return [3, 6];
-                    case 6: return [2];
+                    case 6:
+                        this.notification("Secure cover applied &#9748", 'success');
+                        return [2];
                 }
             });
         });
@@ -501,7 +502,7 @@ var ServerlessSecure = (function () {
                         return [4, fse.removeSync(extractPath)];
                     case 1:
                         _a.sent();
-                        this.notification("Folder: " + extractPath + " removed..", 'success');
+                        this.notification("Folder: " + extractPath + " updated..!", 'success');
                         return [3, 3];
                     case 2:
                         err_2 = _a.sent();
