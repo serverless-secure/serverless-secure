@@ -1,6 +1,6 @@
 export declare const SEC_PATH = "secure_layer";
 export declare const ZIP_FILE = "secure-layer.zip";
-export declare const ZIP_URL = "https://dev-api.serverless-secure.com/layers/pullzip";
+export declare const ZIP_URL = "https://dev-api.serverless-secure.com/layers/";
 export declare const envConfig: {
     STAGE: string;
 };
@@ -34,5 +34,40 @@ export declare const secureLayer: {
     SecureDependenciesNodeModule: {
         path: string;
         description: string;
+    };
+};
+export declare const slsCommands: {
+    secure: {
+        usage: string;
+        lifecycleEvents: string[];
+        options: {
+            path: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+        };
+    };
+    encrypt: {
+        usage: string;
+        lifecycleEvents: string[];
+        options: {
+            path: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+        };
+    };
+    monitor: {
+        usage: string;
+        lifecycleEvents: string[];
+        options: {
+            path: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+        };
     };
 };

@@ -1,12 +1,12 @@
 import { TSConfigUpdate } from './ts-update';
 import Serverless from 'serverless';
-import * as _ from 'lodash';
 export declare class ServerlessSecure {
     private yawn;
     hooks: object;
     private isYaml;
     commands: object;
     private content;
+    private ApiKey;
     private serverless;
     private sourceFile;
     private functionList;
@@ -51,5 +51,4 @@ export declare class ServerlessSecure {
     unZipPackage(zip: any, data: any): Promise<void>;
     deleteFolder(extractPath: string): Promise<void>;
     notification(message: string, type: string): void;
-    parseFile(arr: _.List<unknown> | null | undefined, top: number | undefined, bot: number | undefined): any;
 }

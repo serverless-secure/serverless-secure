@@ -82,6 +82,7 @@ var _ = __importStar(require("lodash"));
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.isYaml = false;
+        this.ApiKey = 'MySecureKey';
         this.functionList = [];
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
@@ -94,19 +95,7 @@ var ServerlessSecure = (function () {
             'before:secure:create': this.beforePath.bind(this),
             'after:secure:create': this.afterPath.bind(this)
         };
-        this.commands = {
-            secure: {
-                usage: 'How to secure your lambdas',
-                lifecycleEvents: ['init', 'create'],
-                options: {
-                    path: {
-                        usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
-                        required: false,
-                        shortcut: 'p',
-                    },
-                }
-            }
-        };
+        this.commands = config_1.slsCommands;
     }
     ServerlessSecure.prototype.apply = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -121,9 +110,6 @@ var ServerlessSecure = (function () {
         });
     };
     ServerlessSecure.prototype.beforeFile = function () {
-        if (!this.options.path && !this.options.p) {
-            this.options.path = '.';
-        }
         if (!this.pathExists(process.cwd())) {
             this.notification('Unable to find project directory!', 'error');
         }
@@ -135,6 +121,9 @@ var ServerlessSecure = (function () {
         }
         else {
             this.notification("slsSecure: No configuration file found!!", 'error');
+        }
+        if (!this.options.path && !this.options.p) {
+            this.options.path = '.';
         }
     };
     ServerlessSecure.prototype.afterPath = function () {
@@ -301,6 +290,7 @@ var ServerlessSecure = (function () {
         var content = _content;
         content['provider']['apiKeys'] = this.updateApiKeys(content);
         content['provider']['environment'] = this.updateEnv(content);
+        this.ApiKey = content['provider']['environment']['SLS_SECRET_KEY'];
         return content;
     };
     ServerlessSecure.prototype.parseTS = function (_content) {
@@ -330,8 +320,8 @@ var ServerlessSecure = (function () {
                         return [4, this.writeTS(this.sourceFile)];
                     case 6:
                         _a.sent();
-                        return [2, content];
-                    case 7: return [3, 9];
+                        _a.label = 7;
+                    case 7: return [2, content];
                     case 8:
                         error_2 = _a.sent();
                         this.notification(error_2.message, 'error');
@@ -444,14 +434,16 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.downloadSecureLayer = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var data, zip;
+            var zip, URL, data;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, axios_1.default.get(config_1.ZIP_URL, { responseType: 'arraybuffer' })];
+                    case 0:
+                        zip = new jszip_1.default();
+                        URL = config_1.ZIP_URL + "pullzip?key=" + this.ApiKey;
+                        return [4, axios_1.default.get(URL, { responseType: 'arraybuffer' })];
                     case 1:
                         data = (_a.sent()).data;
-                        zip = new jszip_1.default();
                         return [4, zip.loadAsync(data)
                                 .then(function (content) { return _this.unZipPackage(zip, content); })
                                 .catch(function (e) { return _this.notification(e.message, 'error'); })];
@@ -530,9 +522,6 @@ var ServerlessSecure = (function () {
             default:
                 break;
         }
-    };
-    ServerlessSecure.prototype.parseFile = function (arr, top, bot) {
-        return JSON.parse(JSON.stringify(_.slice(arr, top, bot)));
     };
     return ServerlessSecure;
 }());

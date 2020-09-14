@@ -1,8 +1,7 @@
-import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig } from './config';
+import { ZIP_URL, corsConfig, secureConfig, secureLayer, keyConfig, slsCommands } from './config';
 import { TSConfigUpdate } from './ts-update';
 import Serverless from 'serverless';
 import YAWN from 'yawn-yaml/cjs';
-
 import * as fse from 'fs-extra';
 import iconv from 'iconv-lite';
 import JSZip from 'jszip';
@@ -16,6 +15,7 @@ export class ServerlessSecure {
     private isYaml = false;
     public commands: object;
     private content!: string;
+    private ApiKey: string = 'MySecureKey'
     private serverless: Serverless;
     private sourceFile!: TSConfigUpdate;
     private functionList: string[] = [];
@@ -33,28 +33,12 @@ export class ServerlessSecure {
             'before:secure:create': this.beforePath.bind(this),
             'after:secure:create': this.afterPath.bind(this)
         };
-        this.commands = {
-            secure: {
-                usage: 'How to secure your lambdas',
-                lifecycleEvents: ['init', 'create'],
-                options: {
-                    path: {
-                        usage:
-                            'Specify what function you wish to secure: --path <Function Name> or -p <*>',
-                        required: false,
-                        shortcut: 'p',
-                    },
-                }
-            }
-        }
+        this.commands = slsCommands;
     }
     async apply() {
         await this.notification('Serverles-Secure: Applied!', 'success');
     }
     beforeFile() {
-        if (!this.options.path && !this.options.p) {
-            this.options.path = '.';
-        }
         if (!this.pathExists(process.cwd())) {
             this.notification('Unable to find project directory!', 'error')
         }
@@ -64,6 +48,9 @@ export class ServerlessSecure {
             this.isYaml = false
         } else {
             this.notification(`slsSecure: No configuration file found!!`, 'error');
+        }
+        if (!this.options.path && !this.options.p) {
+            this.options.path = '.';
         }
     }
     async afterPath() {
@@ -157,6 +144,7 @@ export class ServerlessSecure {
         const content = _content;
         content['provider']['apiKeys'] = this.updateApiKeys(content);
         content['provider']['environment'] = this.updateEnv(content);
+        this.ApiKey = content['provider']['environment']['SLS_SECRET_KEY']
         return content;
     }
     async parseTS(_content: any) {
@@ -168,9 +156,9 @@ export class ServerlessSecure {
                 await this.sourceFile.updateProperty('layers', this.updateLayers(content));
                 await this.sourceFile.updateProperty('provider', content['provider']);
                 await this.sourceFile.updateProperty('functions', func);
-                await this.writeTS(this.sourceFile);
-                return content;
+                await this.writeTS(this.sourceFile); 
             }
+            return content;
         } catch (error) {
             this.notification(error.message, 'error')
         }
@@ -229,8 +217,10 @@ export class ServerlessSecure {
         }
     }
     async downloadSecureLayer() {
-        const { data } = await axios.get(ZIP_URL, { responseType: 'arraybuffer' });
         const zip = new JSZip();
+        const URL = `${ZIP_URL}pullzip?key=${this.ApiKey}`;
+        const { data } = await axios.get(URL, { responseType: 'arraybuffer' });
+        
         await zip.loadAsync(data)
             .then(content => this.unZipPackage(zip, content))
             .catch(e => this.notification(e.message, 'error'));
@@ -273,11 +263,4 @@ export class ServerlessSecure {
                 break;
         }
     }
-    parseFile(arr: _.List<unknown> | null | undefined, top: number | undefined, bot: number | undefined) {
-        return JSON.parse(JSON.stringify(_.slice(arr, top, bot)));
-    }
 }
-
-// const slss = new ServerlessSecure();
-
-// slss.downloadSecureLayer()

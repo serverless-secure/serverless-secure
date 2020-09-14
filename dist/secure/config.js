@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.keyConfig = exports.envConfig = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
+exports.slsCommands = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.keyConfig = exports.envConfig = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
-exports.ZIP_URL = 'https://dev-api.serverless-secure.com/layers/pullzip';
+exports.ZIP_URL = 'https://dev-api.serverless-secure.com/layers/';
 exports.envConfig = {
     STAGE: '${self:provider.stage}'
 };
@@ -49,4 +49,39 @@ exports.secureConfig = {
 };
 exports.secureLayer = {
     SecureDependenciesNodeModule: { path: 'secure_layer', description: 'secure dependencies' }
+};
+exports.slsCommands = {
+    secure: {
+        usage: 'How to secure your lambdas',
+        lifecycleEvents: ['init', 'create'],
+        options: {
+            path: {
+                usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
+                required: false,
+                shortcut: 'p',
+            },
+        }
+    },
+    encrypt: {
+        usage: 'How to secure your lambdas',
+        lifecycleEvents: ['init', 'create'],
+        options: {
+            path: {
+                usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
+                required: false,
+                shortcut: 'p',
+            },
+        }
+    },
+    monitor: {
+        usage: 'How to secure your lambdas',
+        lifecycleEvents: ['init', 'create'],
+        options: {
+            path: {
+                usage: 'Specify what function you wish to secure: --path <Function Name> or -p <*>',
+                required: false,
+                shortcut: 'p',
+            },
+        }
+    }
 };
