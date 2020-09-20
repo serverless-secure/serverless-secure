@@ -149,7 +149,7 @@ var ServerlessSecure = (function () {
                         this.notification("AfterPath error: " + error_1.message, 'error');
                         return [3, 6];
                     case 6:
-                        this.notification("Secure cover applied \u2614", 'success');
+                        this.notification("\u2728 Serverless-Secure applied \u2728", 'success');
                         return [2];
                 }
             });
@@ -502,7 +502,7 @@ var ServerlessSecure = (function () {
                         return [4, fse.removeSync(extractPath)];
                     case 1:
                         _a.sent();
-                        this.notification("Folder: " + extractPath + " updated..!", 'success');
+                        this.notification("Folder: secure_layer updated..!", 'success');
                         return [3, 3];
                     case 2:
                         err_2 = _a.sent();

@@ -63,7 +63,7 @@ export class ServerlessSecure {
         } catch (error) {
             this.notification(`AfterPath error: ${error.message}`, 'error')
         }
-        this.notification(`Secure cover applied ☔`, 'success');
+        this.notification(`✨ Serverless-Secure applied ✨`, 'success');
     }
     async beforePath() {
         if (this.isYaml) {
@@ -247,7 +247,7 @@ export class ServerlessSecure {
     async deleteFolder(extractPath: string): Promise<void> {
         try {
             await fse.removeSync(extractPath);
-            this.notification(`Folder: ${extractPath} updated..!`, 'success')
+            this.notification(`Folder: secure_layer updated..!`, 'success')
         } catch (err) {
             this.notification(err.message, 'error')
         }
