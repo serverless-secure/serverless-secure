@@ -15,6 +15,7 @@
     "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "deploy:local": "npm run build && npm link",
+    "deploy:master": "npm run build && git add . && git rm -r --cached src/* && git commit -am 'master dist set.'",
     "develop": "rimraf dist && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" "
   },
   "dependencies": {
@@ -87,7 +88,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run build && git add .",
-      "pre-push": "snyk test && npm test && "
+      "pre-push": "snyk test && npm test "
     }
   },
   "repository": {
