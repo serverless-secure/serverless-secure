@@ -54,10 +54,10 @@ $ sls secure -p <route-path>
 #   		events: [
 #    			{
 #    				http: {
-#    					method: 'get',
-#    					path: 'hello',
-#						  cors: '${self:custom.corsValue}',
-#						  authorizer: 'secureAuthorizer'
+#                   method: 'get',
+#                   path: 'hello',
+#                   cors: '${self:custom.corsValue}',
+#                   authorizer: 'secureAuthorizer'
 #    				}
 #    			}
 #    		]
