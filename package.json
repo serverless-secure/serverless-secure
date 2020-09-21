@@ -18,7 +18,7 @@
     "deploy": "npm run deploy:local && npm run deploy:git",
     "deploy:local": "npm run build && npm run deploy:compodoc && git add .",
     "deploy:compodoc": "compodoc -p tsconfig.json",
-    "deploy:git": "git rm -r --cached src/* && git commit -am 'master dist set.' && git push -u private master"
+    "deploy:git": "git rm -r --cached src/* && git commit -am 'master dist set.' && git push private master"
   },
   "dependencies": {
     "aws-lambda": "^1.0.6",
