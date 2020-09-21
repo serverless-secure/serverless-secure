@@ -1,6 +1,6 @@
 {
   "name": "serverless-secure",
-  "version": "1.0.1",
+  "version": "1.0.1-Beta",
   "description": "Lambda Secure Serverless Services",
   "main": "dist/index.js",
   "publishConfig": {
@@ -87,13 +87,13 @@
   ],
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build ",
-      "pre-push": "snyk test && npm test "
+      "pre-commit": "snyk test",
+      "pre-push": "npm test "
     }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jmullings/serverless-secure.git"
+    "url": "git+https://github.com/serverless-secure/serverless-secure.git"
   },
   "keywords": [
     "Lambda",
@@ -101,10 +101,13 @@
     "Serverless",
     "Services"
   ],
-  "author": "Jason Mullings <admin@serverless-secure.com>",
+  "author": "Serverless-Secure <admin@serverless-secure.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jmullings/serverless-secure/issues"
+    "url": "https://github.com/serverless-secure/serverless-secure/issues"
   },
-  "homepage": "https://github.com/jmullings/serverless-secure#readme"
+  "homepage": "https://github.com/serverless-secure/serverless-secure#readme",
+  "directories": {
+    "test": "test"
+  }
 }
