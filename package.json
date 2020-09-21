@@ -1,6 +1,6 @@
 {
   "name": "serverless-secure",
-  "version": "1.0.1-Beta",
+  "version": "1.0.1a-Beta",
   "description": "Lambda Secure Serverless Services",
   "main": "dist/index.js",
   "publishConfig": {
