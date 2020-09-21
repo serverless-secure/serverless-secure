@@ -36,7 +36,7 @@ plugins: [
 ## Usage
 
 ```sh
-$ serverles secure
+$ serverless secure
 or
 $ sls secure -p <route-path>
 
