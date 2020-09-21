@@ -14,8 +14,8 @@
     "test": "snyk test && jest --coverage",
     "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "deploy:local": "npm run build && npm link",
-    "deploy:private": "npm run build && git add . && git rm -r --cached src/* && git commit -am 'master dist set.'",
+    "deploy:local": "npm run build && git add .",
+    "deploy:private": "npm run deploy:local&& git rm -r --cached serverless.ts && git rm -r --cached src/* && git commit -am 'master dist set.'",
     "develop": "rimraf dist && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" "
   },
   "dependencies": {
