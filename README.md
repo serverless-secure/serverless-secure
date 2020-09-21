@@ -49,19 +49,19 @@ $ sls secure -p <route-path>
 
 ***..to desired route:***
 
-#   	hello: {
-#   		handler: 'handler.hello',
-#   		events: [
-#    			{
-#    				http: {
-#                   method: 'get',
-#                   path: 'hello',
-#                   cors: '${self:custom.corsValue}',
-#                   authorizer: 'secureAuthorizer'
-#    				}
-#    			}
-#    		]
-#    	}
+# hello: {
+#     handler: 'handler.hello',
+#     events: [
+#         {
+#           http: {
+#             method: 'get',
+#             path: 'hello',
+#             cors: '${self:custom.corsValue}',
+#             authorizer: 'secureAuthorizer'
+#           }
+#         }
+#     ]
+# }
 ```
 
 ## Run tests
