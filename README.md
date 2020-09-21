@@ -1,65 +1,98 @@
-<h1 align="center">Welcome to serverless-secure 👋</h1>
+<h1 align="center">✨ Serverless-Secure [Beta] ✨ </h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
-  <a href="http://serverless-secure.com/docs" target="_blank">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.1.Beta-blue.svg?cacheSeconds=2592000" />
+  <a href="https://serverless-secure.github.io/" target="_blank">
     <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
   </a>
-  <a href="https://github.com/jmullings/serverless-secure/graphs/commit-activity" target="_blank">
+  <a href="https://github.com/serverless-secure/serverless-secure/graphs/commit-activity" target="_blank">
     <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
   </a>
-  <a href="https://github.com/jmullings/serverless-secure/blob/master/LICENSE" target="_blank">
-    <img alt="License: MIT" src="https://img.shields.io/github/license/jmullings/serverless-secure" />
+  <a href="https://github.com/serverless-secure/serverless-secure/blob/master/LICENSE" target="_blank">
+    <img alt="License: MIT" src="https://img.shields.io/github/license/serverless-secure/serverless-secure" />
   </a>
   <a href="https://twitter.com/serverless-secure" target="_blank">
-    <img alt="Twitter: serverless-secure" src="https://img.shields.io/twitter/follow/serverless-secure.svg?style=social" />
+    <img alt="Twitter: slssecure" src="https://img.shields.io/twitter/follow/slssecure.svg?style=social" />
   </a>
 </p>
-> [ PLACE-HOLDER ]
-> Lambda Secure Serverless Services ***COMING SOON***
 
-### 🏠 [Homepage](https://github.com/jmullings/serverless-secure#readme)
+Lambda Secure Serverless Services - ***[ Beta ]***
 
-### ✨ [Demo](http://serverless-secure.com/demo)
+### 🕸️ [Website](https://serverless-secure.com) 🏠 [Homepage](https://github.com/serverless-secure/serverless-secure#readme) ✨ [Demo](http://serverless-secure.com/demo)
 
 ## Install
+### 
+```sh
+$ npm install serverless-secure -D
+```
+## Configure
 
 ```sh
-npm install serverless-secure -D
+plugins: [
+    ....,
+    'serverless-secure',
+  ],
 ```
 
 ## Usage
 
 ```sh
-sls secure -p .
+$ serverles secure
+or
+$ sls secure -p <route-path>
+
+
+***Adds Secure Layer:***
+
+# 	secureAuthorizer: {
+#   		handler: "secure_layer/handler.secureAuthorizer
+#   	}
+
+***..to desired route:***
+
+#   	hello: {
+#   		handler: 'handler.hello',
+#   		events: [
+#    			{
+#    				http: {
+#    					method: 'get',
+#    					path: 'hello',
+#						  cors: '${self:custom.corsValue}',
+#						  authorizer: 'secureAuthorizer'
+#    				}
+#    			}
+#    		]
+#    	}
 ```
 
 ## Run tests
 
 ```sh
-npm run test
+$ npm run test
 ```
+***
+## Alpha Version 🛠 TODO 🛠️
+* $ sls secure-encrypt
+* $ sls secure-encrypt-monitor
+* ...and much more...
 
-## Author
+## Author 👤 **Serverless-Secure**
 
-👤 **Jason Mullings**
+* Website: https://serverless-secure.com/
+* Twitter: [@serverless-secure](https://twitter.com/slssecure)
+* Github: [@serverless-secure](https://github.com/serverless-secure)
+* LinkedIn: [@serverless-secure](https://www.linkedin.com/company/serverless-secure)
 
-* Website: http://serverless-secure.com/
-* Twitter: [@serverless-secure](https://twitter.com/SLSSecure)
-* Github: [@jmullings](https://github.com/serverless-secure)
-* LinkedIn: [@serverless-secure](https://linkedin.com/in/serverless-secure)
+## Contributing 🤝 
 
-## 🤝 Contributing
-
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/jmullings/serverless-secure/issues). You can also take a look at the [contributing guide](https://github.com/jmullings/serverless-secure/blob/master/CONTRIBUTING.md).
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/serverless-secure/serverless-secure/issues). You can also take a look at the [contributing guide](https://github.com/serverless-secure/serverless-secure/blob/master/CONTRIBUTING.md).
 
 ## Show your support
 
 Give a ⭐️ if this project helped you!
 
-## 📝 License
+## License 📝 
 
-Copyright © 2020 [Jason Mullings](https://github.com/serverless-secure).<br />
-This project is [MIT](https://github.com/jmullings/serverless-secure/blob/master/LICENSE) licensed.
+Copyright © 2020 [Serverless-Secure Software Publishing House](https://github.com/serverless-secure).<br />
+This project is [MIT](https://github.com/serverless-secure/serverless-secure/blob/master/LICENSE) licensed.
 
 ***
-_This README was generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
