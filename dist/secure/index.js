@@ -75,10 +75,10 @@ var ts_update_1 = require("./ts-update");
 var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var fse = __importStar(require("fs-extra"));
 var iconv_lite_1 = __importDefault(require("iconv-lite"));
-var jszip_1 = __importDefault(require("jszip"));
-var axios_1 = __importDefault(require("axios"));
 var path = __importStar(require("path"));
 var _ = __importStar(require("lodash"));
+var jszip_1 = __importDefault(require("jszip"));
+var axios_1 = __importDefault(require("axios"));
 var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.isYaml = false;
