@@ -101,7 +101,10 @@ export class ServerlessSecure {
         }
     }
     updateEnv(content: { [x: string]: any; }) {
-        return _.assign({}, content['provider']['environment'], keyConfig);
+        return  {
+            ...keyConfig,
+            ...content['provider']['environment']
+        };
     }
     updateCustom(content: { [x: string]: any; }) {
         return _.assign({}, content['custom'], corsConfig);
