@@ -10,9 +10,9 @@
   <a href="https://github.com/serverless-secure/serverless-secure/blob/master/LICENSE" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/github/license/serverless-secure/serverless-secure" />
   </a>
-  <a href="https://twitter.com/serverless-secure" target="_blank">
+  <!-- <a href="https://twitter.com/serverless-secure" target="_blank">
     <img alt="Twitter: slssecure" src="https://img.shields.io/twitter/follow/slssecure.svg?style=social" />
-  </a>
+  </a> -->
 </p>
 
 Lambda Secure Serverless Services - ***[ Beta ]***
