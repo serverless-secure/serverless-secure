@@ -42,9 +42,9 @@
   <a href="https://github.com/serverless-secure/serverless-secure/blob/master/LICENSE" target="_blank">
     <img alt="License: MIT" src="https://img.shields.io/github/license/serverless-secure/serverless-secure" />
   </a>
-  <a href="https://twitter.com/serverless-secure" target="_blank">
+  <!-- <a href="https://twitter.com/serverless-secure" target="_blank">
     <img alt="Twitter: slssecure" src="https://img.shields.io/twitter/follow/slssecure.svg?style=social" />
-  </a>
+  </a> -->
 </p>
 
 <p>Lambda Secure Serverless Services - <strong><em>[ Beta ]</em></strong></p>
@@ -59,7 +59,6 @@
 <div><pre class="line-numbers"><code class="language-sh">$ serverless secure
 or
 $ sls secure -p &lt;route-path&gt;
-
 
 ***Adds Secure Layer:***
 
@@ -81,7 +80,17 @@ $ sls secure -p &lt;route-path&gt;
 #           }
 #         }
 #     ]
-# }</code></pre></div><h2 id="run-tests">Run tests</h2>
+# }</code></pre></div><hr>
+<h2 id="secure-a-token">Secure a token</h2>
+<div><pre class="line-numbers"><code class="language-sh">$ curl --location --request POST &#39;http://localhost:3000/dev/secure_token&#39; \
+--header &#39;x-api-key: &lt;YOUR GENERATED API KEY&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;Secure a token&quot;
+}&#39;</code></pre></div><h2 id="employ-token">Employ token</h2>
+<div><pre class="line-numbers"><code class="language-sh">$ curl --location --request GET &#39;http://localhost:3000/dev/hello&#39; \
+--header &#39;Authorization: eyJhbGciOiJIUzI1NiJ9.....Z3wXEsAIdXzCIY&#39;</code></pre></div><hr>
+<h2 id="run-tests">Run tests</h2>
 <div><pre class="line-numbers"><code class="language-sh">$ npm run test</code></pre></div><hr>
 <h2 id="alpha-version-🛠-todo-🛠️">Alpha Version 🛠 TODO 🛠️</h2>
 <ul>
