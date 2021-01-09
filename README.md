@@ -40,7 +40,6 @@ $ serverless secure
 or
 $ sls secure -p <route-path>
 
-
 ***Adds Secure Layer:***
 
 # 	secureAuthorizer: {
@@ -63,7 +62,24 @@ $ sls secure -p <route-path>
 #     ]
 # }
 ```
+***
+## Secure a token
 
+```sh
+$ curl --location --request POST 'http://localhost:3000/dev/secure_token' \
+--header 'x-api-key: <YOUR GENERATED API KEY>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "Secure a token"
+}'
+```
+## Employ token
+
+```sh
+$ curl --location --request GET 'http://localhost:3000/dev/hello' \
+--header 'Authorization: eyJhbGciOiJIUzI1NiJ9.....Z3wXEsAIdXzCIY'
+```
+***
 ## Run tests
 
 ```sh

@@ -8,6 +8,7 @@
       "deprecation": {
         "severity": "warning"
       },
+      "arguments-order": false,
       "no-console": [true, "debug", "info", "time", "timeEnd", "trace"],
       "no-commented-code": false,
       "no-empty": false,

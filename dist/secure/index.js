@@ -218,7 +218,7 @@ var ServerlessSecure = (function () {
         });
     };
     ServerlessSecure.prototype.updateEnv = function (content) {
-        return _.assign({}, content['provider']['environment'], config_1.keyConfig);
+        return __assign(__assign({}, config_1.keyConfig), content['provider']['environment']);
     };
     ServerlessSecure.prototype.updateCustom = function (content) {
         return _.assign({}, content['custom'], config_1.corsConfig);

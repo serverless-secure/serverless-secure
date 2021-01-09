@@ -12,4 +12,11 @@ ignore:
     - download > decompress > decompress-targz > decompress-tar:
         reason: None given
         expires: '2020-10-13T04:01:31.914Z'
+  SNYK-JS-INI-1048974:
+    - update-notifier > latest-version > package-json > registry-auth-token > rc > ini:
+        reason: dev-deps
+        expires: '2021-02-08T10:22:35.807Z'
+    - update-notifier > latest-version > package-json > registry-url > rc > ini:
+        reason: dev-deps
+        expires: '2021-02-08T10:22:35.807Z'
 patch: {}
