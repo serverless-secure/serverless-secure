@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es2017"],
+    "removeComments": true,
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "dist",
+    // "strict": true
+  },
+  "include": ["./**/*.ts"],
+  "exclude": [
+    "serverless.ts",
+    "node_modules/**/**/*",
+    "coverage/**/*",
+    ".webpack/**/*",
+    "_warmup/**/*",
+    ".vscode/**/*",
+    "test/**/*"
+  ]
+}
