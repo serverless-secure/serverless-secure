@@ -7,18 +7,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "prepublish": "npm run build",
-    "precommit": "npm run test",
-    "build": "rimraf dist && tsc --project tsconfig.json --declaration",
-    "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
-    "pretest": "npm run lint",
-    "test": "snyk test && jest --coverage",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "develop": "rimraf dist && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" ",
-    "deploy": "npm run deploy:local && npm run deploy:git",
-    "deploy:local": "npm run build && npm run deploy:compodoc && git add .",
-    "deploy:compodoc": "compodoc -p tsconfig.json",
-    "deploy:git": "git rm -r --cached src/* && git commit -am 'master dist set.' && git push private master"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "aws-lambda": "^1.0.6",
@@ -35,7 +24,6 @@
     "yawn-yaml": "^1.5.0"
   },
   "devDependencies": {
-    "@compodoc/compodoc": "^1.1.11",
     "@hapi/joi": "^17.1.1",
     "@types/aws-sdk": "^2.7.0",
     "@types/fs-extra": "^9.0.1",
@@ -85,12 +73,6 @@
     "package.json",
     "package-lock.json"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "snyk test",
-      "pre-push": "npm test "
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/serverless-secure/serverless-secure.git"
