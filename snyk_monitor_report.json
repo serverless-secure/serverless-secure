@@ -1,7 +1,7 @@
 {
   "ok": true,
   "org": "serverless-secure",
-  "id": "0734272b-dca6-4b6e-a29d-1285482e03cf",
+  "id": "3e3f852c-7649-4ac2-b310-254fb896ee62",
   "isMonitored": true,
   "licensesPolicy": {
     "severities": {
@@ -87,7 +87,7 @@
       }
     }
   },
-  "uri": "https://app.snyk.io/org/serverless-secure/project/e9aef883-399c-4078-ba91-6340e89c709e/history/54f8551b-03ad-446f-afa3-2c50c943eb9b",
+  "uri": "https://app.snyk.io/org/serverless-secure/project/e9aef883-399c-4078-ba91-6340e89c709e/history/a667559d-672a-4fa7-b0c7-f64d18a40856",
   "path": "/var/lib/jenkins/workspace/serverless-secure",
   "manageUrl": "https://snyk.io/org/serverless-secure/manage",
   "packageManager": "npm",
