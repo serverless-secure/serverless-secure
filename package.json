@@ -4,6 +4,9 @@
   "description": "Lambda Secure Serverless Services",
   "main": "dist/index.js",
   "scripts": {
+    "precommit": "npm run test",
+    "build": "rimraf dist && tsc --project tsconfig.json --declaration",
+    "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
     "pretest": "npm run lint",
     "test": "jest --coverage",
     "test:snyk": "snyk test",
@@ -12,8 +15,7 @@
     "develop": "rimraf dist && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" ",
     "deploy": "npm run deploy:local && npm run deploy:git",
     "deploy:local": "npm run build",
-    "deploy:compodoc": "compodoc -p tsconfig.json",
-    "deploy:git": "git rm -r --cached src/* && git commit -am 'master dist set.' && git push private master"
+    "deploy:compodoc": "compodoc -p tsconfig.json"
   },
   "dependencies": {
     "aws-lambda": "^1.0.6",
