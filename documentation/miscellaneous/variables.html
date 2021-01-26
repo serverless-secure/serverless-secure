@@ -323,7 +323,19 @@
     options: {
       path: {
         usage:
-          &#x27;Specify what function you wish to secure: --path &lt;Function Name&gt; or -p &lt;*&gt;&#x27;,
+          &#x27;Specify which function you wish to secure: --path &lt;Function Name&gt; or -p &lt;*&gt;&#x27;,
+        required: false,
+        shortcut: &#x27;p&#x27;,
+      },
+    }
+  },
+  [&#x27;secure-session&#x27;]: {
+    usage: &#x27;How to secure your lambdas&#x27;,
+    lifecycleEvents: [&#x27;init&#x27;, &#x27;create&#x27;],
+    options: {
+      path: {
+        usage:
+          &#x27;Specify your session function: --path &lt;Function Name&gt; or -p &lt;*&gt;&#x27;,
         required: false,
         shortcut: &#x27;p&#x27;,
       },
