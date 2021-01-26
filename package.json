@@ -4,10 +4,6 @@
   "description": "Lambda Secure Serverless Services",
   "main": "dist/index.js",
   "scripts": {
-    "prepublish": "npm run build",
-    "precommit": "npm run test",
-    "build": "rimraf dist && tsc --project tsconfig.json --declaration",
-    "build:package": "npx -p typescript@3.8.3 tsc --project tsconfig.json",
     "pretest": "npm run lint",
     "test": "jest --coverage",
     "test:snyk": "snyk test",
