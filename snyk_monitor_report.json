@@ -87,7 +87,7 @@
       }
     }
   },
-  "uri": "https://app.snyk.io/org/serverless-secure/project/e9aef883-399c-4078-ba91-6340e89c709e/history/53146b44-eb39-4176-a2ef-a71607dcbbc1",
+  "uri": "https://app.snyk.io/org/serverless-secure/project/e9aef883-399c-4078-ba91-6340e89c709e/history/ee3f2358-e846-4109-87db-51afdcf684fc",
   "path": "/var/lib/jenkins/workspace/serverless-secure",
   "manageUrl": "https://snyk.io/org/serverless-secure/manage",
   "packageManager": "npm",
