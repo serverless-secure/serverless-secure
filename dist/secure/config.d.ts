@@ -1,11 +1,48 @@
 export declare const SEC_PATH = "secure_layer";
 export declare const ZIP_FILE = "secure-layer.zip";
-export declare const ZIP_URL = "https://dev-api.serverless-secure.com/layers/";
+export declare const ZIP_URL: string;
 export declare const envConfig: {
     STAGE: string;
 };
 export declare const keyConfig: {
     SLS_SECRET_KEY: string;
+};
+export declare const whiteList: {
+    Effect: string;
+    Principal: string;
+    Action: string;
+    Resource: string;
+    Condition: {
+        IpAddress: {
+            'aws:SourceIp': string;
+        };
+    };
+};
+export declare const sessionFunc: (name: any) => {
+    [x: number]: {
+        handler: string;
+        events: {
+            http: {
+                method: string;
+                path: string;
+                cors: string;
+                authorizer: string;
+            };
+        }[];
+    };
+};
+export declare const secureFunc: (name: any) => {
+    [x: number]: {
+        handler: string;
+        events: {
+            http: {
+                method: string;
+                path: string;
+                cors: string;
+                authorizer: string;
+            };
+        }[];
+    };
 };
 export declare const corsConfig: {
     corsValue: {
@@ -48,7 +85,7 @@ export declare const slsCommands: {
             };
         };
     };
-    encrypt: {
+    "secure-session": {
         usage: string;
         lifecycleEvents: string[];
         options: {
@@ -59,11 +96,22 @@ export declare const slsCommands: {
             };
         };
     };
-    monitor: {
+    "secure-whitelist": {
         usage: string;
         lifecycleEvents: string[];
         options: {
-            path: {
+            ip: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+        };
+    };
+    "secure-blacklist": {
+        usage: string;
+        lifecycleEvents: string[];
+        options: {
+            ip: {
                 usage: string;
                 required: boolean;
                 shortcut: string;
