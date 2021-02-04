@@ -117,6 +117,15 @@ var ServerlessSecure = (function () {
             });
         });
     };
+    ServerlessSecure.prototype.getcompleteFunction = function () {
+        var _this = this;
+        var funcNames = this.serverless.service.getAllFunctions();
+        var funcName = {};
+        return funcNames.map(function (func) {
+            var _a;
+            return (__assign(__assign({}, funcName), (_a = {}, _a[func] = _this.serverless.service.getFunction(func), _a)));
+        });
+    };
     ServerlessSecure.prototype.beforeFile = function () {
         if (!this.pathExists(process.cwd())) {
             this.notification('Unable to find project directory!', 'error');
@@ -177,8 +186,10 @@ var ServerlessSecure = (function () {
                                 _this.parseYAML(_this.yawn.json);
                             }
                             else {
+                                _this.content = config;
                                 _this.sourceFile = new ts_update_1.TSConfigUpdate(_this.content);
-                                _this.parseTS(_this.sourceFile.getConfigElement());
+                                var conf = _this.serverless.service.validate();
+                                _this.parseTS(conf.initialServerlessConfig);
                             }
                         })
                             .catch(function (err) { return _this.notification("Error while reading file:\n\n%s " + String(err), 'error'); })];
@@ -242,9 +253,6 @@ var ServerlessSecure = (function () {
                 switch (_a.label) {
                     case 0:
                         events = ele['events'] || [];
-                        if (events && 'name' in events) {
-                            delete ele['events']['name'];
-                        }
                         return [4, _.map(events, function (res) {
                                 if (res && 'http' in res) {
                                     res.http['cors'] = '${self:custom.corsValue}';
@@ -277,6 +285,7 @@ var ServerlessSecure = (function () {
                                             if (!_.has(ele, 'events')) {
                                                 ele['events'] = config_1.secureFunc(item)[item]['events'];
                                             }
+                                            delete ele['name'];
                                             this.functionList.push(ele);
                                             return [4, this.setOptions(ele)];
                                         case 1:
@@ -295,9 +304,29 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.updateSession = function (content, opath) {
         return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
             return __generator(this, function (_a) {
-                content['functions'][opath] = __assign(__assign({}, config_1.sessionFunc(opath)[opath]), content['functions'][opath]);
-                return [2, content['functions']];
+                switch (_a.label) {
+                    case 0:
+                        content['functions'][opath] = __assign(__assign({}, config_1.sessionFunc(opath)[opath]), content['functions'][opath]);
+                        return [4, _.mapValues(content['functions'], function (ele) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    if (_.has(ele, 'events') && ele['events'].length === 0) {
+                                        delete ele['events'];
+                                    }
+                                    if (_.has(ele, 'events') && 'http' in ele['events'][0]) {
+                                        ele['events'][0].http['cors'] = '${self:custom.corsValue}';
+                                    }
+                                    if (_.has(ele, 'name')) {
+                                        delete ele['name'];
+                                    }
+                                    return [2];
+                                });
+                            }); })];
+                    case 1:
+                        _a.sent();
+                        return [2, content['functions']];
+                }
             });
         });
     };
@@ -363,6 +392,10 @@ var ServerlessSecure = (function () {
                     case 0:
                         _b.trys.push([0, 12, , 13]);
                         content = this.contentUpdate(_content);
+                        delete content['provider']['stage'];
+                        delete content['provider']['region'];
+                        delete content['provider']['variableSyntax'];
+                        delete content['provider']['versionFunctions'];
                         commands = this.serverless['processedInput']['commands'][0];
                         opath = this.options.path || this.options.p || '.';
                         _a = commands;
@@ -392,7 +425,9 @@ var ServerlessSecure = (function () {
                     case 9:
                         this.notification("Error while reading file:\n\n%s " + String(commands), 'error');
                         return [3, 10];
-                    case 10: return [4, this.writeTS(this.sourceFile)];
+                    case 10:
+                        console.log(JSON.stringify(content, true, 2));
+                        return [4, this.writeTS(this.sourceFile)];
                     case 11:
                         _b.sent();
                         return [3, 13];
@@ -567,19 +602,14 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.writeTS = function (sourceFile) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, _c;
             var _this = this;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        _b = (_a = fse).writeFile;
-                        _c = [this.baseTS];
-                        return [4, this.ignoreErrors(sourceFile)];
-                    case 1: return [4, _b.apply(_a, _c.concat([_d.sent(), { encoding: 'utf8' }]))
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, fse.writeFile(this.baseTS, this.ignoreErrors(sourceFile), { encoding: 'utf8' })
                             .then(this.serverless.cli.log('TS File Updated!'))
                             .catch(function (e) { return _this.notification(e.message, 'error'); })];
-                    case 2:
-                        _d.sent();
+                    case 1:
+                        _a.sent();
                         return [2];
                 }
             });
@@ -693,6 +723,8 @@ var ServerlessSecure = (function () {
                     case 1:
                         _a.sent();
                         this.notification("Folder: secure_layer updated..!", 'success');
+                        if (!this.isYaml)
+                            this.notification("Webpack: .js extensions required!", 'success');
                         return [3, 3];
                     case 2:
                         err_2 = _a.sent();

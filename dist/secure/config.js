@@ -26,7 +26,7 @@ exports.sessionFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: "handler." + name,
+            handler: "<create handler function>.handler." + name,
             events: [
                 {
                     http: {

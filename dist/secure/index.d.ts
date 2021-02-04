@@ -19,6 +19,7 @@ export declare class ServerlessSecure {
     private baseLayer;
     constructor(serverless?: Serverless, options?: any);
     apply(): Promise<void>;
+    getcompleteFunction(): {}[];
     beforeFile(): void;
     afterPath(): Promise<void>;
     beforePath(): Promise<void>;
