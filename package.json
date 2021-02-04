@@ -1,7 +1,7 @@
 {
   "name": "serverless-secure",
   "version": "1.0.3",
-  "description": "Lambda Serverless Security Session blacklist whitelist",
+  "description": "Lambda  Serverless Security Session",
   "main": "dist/index.js",
   "scripts": {
     "precommit": "npm run test",
