@@ -57,10 +57,7 @@ $ sls secure -p <route-path>
 #             path: 'hello',
 #             cors: '${self:custom.corsValue}',
 #             authorizer: 'secureAuthorizer'
-#           }
-#         }
-#     ]
-# }
+/##############################################/
 ```
 ***
 ## Secure a token
@@ -70,7 +67,8 @@ $ curl --location --request POST 'http://localhost:3000/dev/secure_token' \
 --header 'x-api-key: <YOUR GENERATED API KEY>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "name": "Secure a token"
+    "name": "you can also request a session token: below",
+    "expires": "5" <---<< Request a Session Route!!
 }'
 ```
 ## Employ token
@@ -78,6 +76,42 @@ $ curl --location --request POST 'http://localhost:3000/dev/secure_token' \
 ```sh
 $ curl --location --request GET 'http://localhost:3000/dev/hello' \
 --header 'Authorization: eyJhbGciOiJIUzI1NiJ9.....Z3wXEsAIdXzCIY'
+```
+***
+## Build a Session Route
+
+```sh
+$ sls secure-session -p mysession
+```
+
+## Employ session
+
+```sh
+$ curl --location --request POST 'http://localhost:3000/dev/b34ef189e21240.....143de480387a/session' \
+--header 'Authorization: true' \
+--header 'Content-Type: text/plain' \
+--data-raw '{
+}'
+```
+***
+## Headers:
+```diff
+- N.B: All --header Authorization requests require a value!
+```
+
+![header Authorization = true](https://github.com/serverless-secure/serverless-secure/blob/master/dist/images/header-example.png?raw=true)
+
+***
+## Black-List IPAdresses
+
+```sh
+$ sls secure-blacklist -ip 127.0.0.1
+```
+***
+## White-List IPAdresses
+
+```sh
+$ sls secure-whitelist -ip 127.0.0.1
 ```
 ***
 ## Run tests
@@ -88,8 +122,8 @@ $ npm run test
 ***
 ## Alpha Version 🛠 TODO 🛠️
 * $ sls secure-encrypt
-* $ sls secure-encrypt-monitor
-* ...and much more...
+* $ sls secure-monitor
+* ...and much much more...
 
 ## Author 👤 **Serverless-Secure**
 

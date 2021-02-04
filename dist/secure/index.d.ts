@@ -17,33 +17,53 @@ export declare class ServerlessSecure {
     private baseTS;
     private baseYAML;
     private baseLayer;
+    private secureTS;
+    private secureYAML;
     constructor(serverless?: Serverless, options?: any);
     apply(): Promise<void>;
     beforeFile(): void;
     afterPath(): Promise<void>;
     beforePath(): Promise<void>;
-    static parseHttpPath(_path: string): string;
+    setFilePath(): void;
     pathExists(_path: string): Promise<boolean>;
-    updateEnv(content: {
-        [x: string]: any;
-    }): any;
-    updateCustom(content: {
-        [x: string]: any;
-    }): any;
-    updateLayers(content: {
-        [x: string]: any;
-    }): any;
+    updateEnv(content: Serverless): any;
+    updateCustom(content: Serverless): any;
+    updateLayers(content: Serverless): any;
     updateApiKeys(content: {
         provider: any;
     }): unknown[];
-    setOptions(ele: any): Promise<void>;
-    updateFunctions(content: {
-        [x: string]: any;
-    }): Promise<any>;
+    getcompleteFunction(): {}[];
+    setOptions(events: any): Promise<void>;
+    updateFunctions(content: Serverless, opath: any): Promise<any>;
+    updateSession(content: Serverless, opath: string): Promise<any>;
+    cleanFunction(ele: any): void;
     contentUpdate(_content: any): any;
-    parseTS(_content: any): Promise<any>;
-    parseYAML(_content: any): Promise<any>;
-    ignoreErrors(sourceFile: TSConfigUpdate): string;
+    parseConfigFile(_content: Serverless): Promise<void>;
+    formatIpaddress(ips: string[], opath?: string): string;
+    setList(ips: any[], Effect: any, opath: any): {
+        Effect: string;
+        Principal: string;
+        Action: string;
+        Resource: string;
+        Condition: {
+            IpAddress: {
+                'aws:SourceIp': string;
+            };
+        };
+    } & {
+        Effect: any;
+        Condition: {
+            IpAddress: {
+                aws: {
+                    SourceIp: string;
+                };
+            };
+        };
+    };
+    mapWhitelist(content: any, opath: string, commands: any): Promise<any>;
+    mapSecure(content: Serverless, opath: any, commands: any): Promise<Serverless>;
+    mapSecureYML(_content: Serverless, opath: any, commands: any): Promise<void>;
+    ignoreErrors(sourceFile: TSConfigUpdate): any;
     writeTS(sourceFile: TSConfigUpdate): Promise<void>;
     writeYAML(content: Serverless): Promise<void>;
     mkdirRecursively(folderpath: any): boolean;
