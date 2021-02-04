@@ -1,6 +1,26 @@
+import { ServerlessSecure } from ".";
 export declare const SEC_PATH = "secure_layer";
 export declare const ZIP_FILE = "secure-layer.zip";
 export declare const ZIP_URL: string;
+export declare const parseHttpPath: (_path: string) => string;
+export declare const sortKeys: (data: object) => {
+    [k: string]: any;
+};
+export declare const hooks: (_this: ServerlessSecure) => {
+    'before:package:finalize': any;
+    'before:secure:init': any;
+    'before:secure:create': any;
+    'after:secure:create': any;
+    'before:secure-session:init': any;
+    'before:secure-session:create': any;
+    'after:secure-session:create': any;
+    'before:secure-whitelist:init': any;
+    'before:secure-whitelist:create': any;
+    'after:secure-whitelist:create': any;
+    'before:secure-blacklist:init': any;
+    'before:secure-blacklist:create': any;
+    'after:secure-blacklist:create': any;
+};
 export declare const envConfig: {
     STAGE: string;
 };
@@ -73,11 +93,31 @@ export declare const secureLayer: {
         description: string;
     };
 };
+export declare const input: {
+    usage: string;
+    required: boolean;
+    shortcut: string;
+};
+export declare const out: {
+    usage: string;
+    required: boolean;
+    shortcut: string;
+};
 export declare const slsCommands: {
     secure: {
         usage: string;
         lifecycleEvents: string[];
         options: {
+            input: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            out: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
             path: {
                 usage: string;
                 required: boolean;
@@ -89,6 +129,16 @@ export declare const slsCommands: {
         usage: string;
         lifecycleEvents: string[];
         options: {
+            input: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            out: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
             path: {
                 usage: string;
                 required: boolean;
@@ -100,6 +150,16 @@ export declare const slsCommands: {
         usage: string;
         lifecycleEvents: string[];
         options: {
+            input: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            out: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
             ip: {
                 usage: string;
                 required: boolean;
@@ -111,6 +171,16 @@ export declare const slsCommands: {
         usage: string;
         lifecycleEvents: string[];
         options: {
+            input: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            out: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
             ip: {
                 usage: string;
                 required: boolean;

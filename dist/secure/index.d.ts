@@ -17,13 +17,14 @@ export declare class ServerlessSecure {
     private baseTS;
     private baseYAML;
     private baseLayer;
+    private secureTS;
+    private secureYAML;
     constructor(serverless?: Serverless, options?: any);
     apply(): Promise<void>;
-    getcompleteFunction(): {}[];
     beforeFile(): void;
     afterPath(): Promise<void>;
     beforePath(): Promise<void>;
-    static parseHttpPath(_path: string): string;
+    setFilePath(): void;
     pathExists(_path: string): Promise<boolean>;
     updateEnv(content: Serverless): any;
     updateCustom(content: Serverless): any;
@@ -31,12 +32,13 @@ export declare class ServerlessSecure {
     updateApiKeys(content: {
         provider: any;
     }): unknown[];
-    setOptions(ele: any): Promise<void>;
+    getcompleteFunction(): {}[];
+    setOptions(events: any): Promise<void>;
     updateFunctions(content: Serverless, opath: any): Promise<any>;
     updateSession(content: Serverless, opath: string): Promise<any>;
+    cleanFunction(ele: any): void;
     contentUpdate(_content: any): any;
-    parseYAML(_content: any): Promise<void>;
-    parseTS(_content: Serverless): Promise<void>;
+    parseConfigFile(_content: Serverless): Promise<void>;
     formatIpaddress(ips: string[], opath?: string): string;
     setList(ips: any[], Effect: any, opath: any): {
         Effect: string;
@@ -58,11 +60,8 @@ export declare class ServerlessSecure {
             };
         };
     };
-    mapWhitelist(content: any, opath: string, commands: any): Promise<void>;
+    mapWhitelist(content: any, opath: string, commands: any): Promise<any>;
     mapSecure(content: Serverless, opath: any, commands: any): Promise<Serverless>;
-    sortKeys(data: object): {
-        [k: string]: any;
-    };
     mapSecureYML(_content: Serverless, opath: any, commands: any): Promise<void>;
     ignoreErrors(sourceFile: TSConfigUpdate): any;
     writeTS(sourceFile: TSConfigUpdate): Promise<void>;
