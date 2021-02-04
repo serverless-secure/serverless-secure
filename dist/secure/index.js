@@ -534,7 +534,6 @@ var ServerlessSecure = (function () {
                         _f.label = 6;
                     case 6:
                         _c[_d] = _e;
-                        console.log(JSON.stringify(content, true, 2));
                         _f.label = 7;
                     case 7: return [3, 9];
                     case 8:
