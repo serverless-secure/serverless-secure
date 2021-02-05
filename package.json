@@ -1,7 +1,21 @@
 {
   "name": "serverless-secure",
-  "version": "1.0.3",
-  "description": "Lambda  Serverless Security Session",
+  "version": "1.0.4",
+  "description": "Lambda Serverless Secure tools to improving the security of your serverless applications.",
+  "keywords": [
+    "AWS",
+    "Serverless",
+    "Secure",
+    "Lambda",
+    "Amazon Web Services",
+    "Resource-Policy",
+    "Configuration",
+    "Blacklist",
+    "Whitelist",
+    "Security",
+    "Serverless",
+    "Services"
+  ],
   "main": "dist/index.js",
   "scripts": {
     "precommit": "npm run test",
@@ -85,12 +99,6 @@
     "type": "git",
     "url": "git+https://github.com/serverless-secure/serverless-secure.git"
   },
-  "keywords": [
-    "Lambda",
-    "Secure",
-    "Serverless",
-    "Services"
-  ],
   "author": "Serverless-Secure <admin@serverless-secure.com>",
   "license": "MIT",
   "bugs": {
