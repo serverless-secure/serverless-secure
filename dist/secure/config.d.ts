@@ -2,10 +2,6 @@ import { ServerlessSecure } from ".";
 export declare const SEC_PATH = "secure_layer";
 export declare const ZIP_FILE = "secure-layer.zip";
 export declare const ZIP_URL: string;
-export declare const parseHttpPath: (_path: string) => string;
-export declare const sortKeys: (data: object) => {
-    [k: string]: any;
-};
 export declare const hooks: (_this: ServerlessSecure) => {
     'before:package:finalize': any;
     'before:secure:init': any;
@@ -19,7 +15,9 @@ export declare const hooks: (_this: ServerlessSecure) => {
     'after:secure-whitelist:create': any;
     'before:secure-blacklist:init': any;
     'before:secure-blacklist:create': any;
-    'after:secure-blacklist:create': any;
+    'before:secure-policy:init': any;
+    'before:secure-policy:create': any;
+    'after:secure-policy:create': any;
 };
 export declare const envConfig: {
     STAGE: string;
@@ -163,7 +161,6 @@ export declare const slsCommands: {
             ip: {
                 usage: string;
                 required: boolean;
-                shortcut: string;
             };
         };
     };
@@ -184,8 +181,263 @@ export declare const slsCommands: {
             ip: {
                 usage: string;
                 required: boolean;
+            };
+        };
+    };
+    "secure-policy": {
+        usage: string;
+        lifecycleEvents: string[];
+        options: {
+            Action: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            Arn: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            Condition: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            Path: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            Policy: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            Resource: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            Sid: {
+                usage: string;
+                required: boolean;
                 shortcut: string;
             };
         };
     };
 };
+declare const _default: {
+    ZIP_URL: string;
+    corsConfig: {
+        corsValue: {
+            origin: string;
+            headers: string[];
+            allowCredentials: boolean;
+        };
+    };
+    secureConfig: {
+        secureToken: {
+            handler: string;
+            events: {
+                http: {
+                    path: string;
+                    method: string;
+                    cors: string;
+                    private: boolean;
+                };
+            }[];
+        };
+        secureAuthorizer: {
+            handler: string;
+        };
+    };
+    secureLayer: {
+        SecureDependenciesNodeModule: {
+            path: string;
+            description: string;
+        };
+    };
+    keyConfig: {
+        SLS_SECRET_KEY: string;
+    };
+    slsCommands: {
+        secure: {
+            usage: string;
+            lifecycleEvents: string[];
+            options: {
+                input: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                out: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                path: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+            };
+        };
+        "secure-session": {
+            usage: string;
+            lifecycleEvents: string[];
+            options: {
+                input: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                out: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                path: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+            };
+        };
+        "secure-whitelist": {
+            usage: string;
+            lifecycleEvents: string[];
+            options: {
+                input: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                out: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                ip: {
+                    usage: string;
+                    required: boolean;
+                };
+            };
+        };
+        "secure-blacklist": {
+            usage: string;
+            lifecycleEvents: string[];
+            options: {
+                input: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                out: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                ip: {
+                    usage: string;
+                    required: boolean;
+                };
+            };
+        };
+        "secure-policy": {
+            usage: string;
+            lifecycleEvents: string[];
+            options: {
+                Action: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                Arn: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                Condition: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                Path: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                Policy: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                Resource: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+                Sid: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
+            };
+        };
+    };
+    whiteList: {
+        Effect: string;
+        Principal: string;
+        Action: string;
+        Resource: string;
+        Condition: {
+            IpAddress: {
+                'aws:SourceIp': string;
+            };
+        };
+    };
+    sessionFunc: (name: any) => {
+        [x: number]: {
+            handler: string;
+            events: {
+                http: {
+                    method: string;
+                    path: string;
+                    cors: string;
+                    authorizer: string;
+                };
+            }[];
+        };
+    };
+    secureFunc: (name: any) => {
+        [x: number]: {
+            handler: string;
+            events: {
+                http: {
+                    method: string;
+                    path: string;
+                    cors: string;
+                    authorizer: string;
+                };
+            }[];
+        };
+    };
+    hooks: (_this: ServerlessSecure) => {
+        'before:package:finalize': any;
+        'before:secure:init': any;
+        'before:secure:create': any;
+        'after:secure:create': any;
+        'before:secure-session:init': any;
+        'before:secure-session:create': any;
+        'after:secure-session:create': any;
+        'before:secure-whitelist:init': any;
+        'before:secure-whitelist:create': any;
+        'after:secure-whitelist:create': any;
+        'before:secure-blacklist:init': any;
+        'before:secure-blacklist:create': any;
+        'before:secure-policy:init': any;
+        'before:secure-policy:create': any;
+        'after:secure-policy:create': any;
+    };
+};
+export default _default;

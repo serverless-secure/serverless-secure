@@ -70,7 +70,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServerlessSecure = void 0;
-var config_1 = require("./config");
+var config_1 = __importDefault(require("./config"));
+var helper_1 = __importDefault(require("./helper"));
 var ts_update_1 = require("./ts-update");
 var cjs_1 = __importDefault(require("yawn-yaml/cjs"));
 var fse = __importStar(require("fs-extra"));
@@ -90,20 +91,11 @@ var ServerlessSecure = (function () {
         this.secureYAML = path.join(process.cwd(), 'serverless-secure.yml');
         this.options = options;
         this.serverless = serverless;
-        this.hooks = config_1.hooks(this);
-        this.commands = config_1.slsCommands;
+        this.hooks = config_1.default.hooks(this);
+        this.commands = config_1.default.slsCommands;
     }
     ServerlessSecure.prototype.apply = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.notification('Serverles-Secure: Applied!', 'success')];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
-        });
+        this.notification('Serverles-Secure: Applied!', 'success');
     };
     ServerlessSecure.prototype.beforeFile = function () {
         if (!this.pathExists(process.cwd())) {
@@ -220,22 +212,6 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.updateEnv = function (content) {
-        return __assign(__assign({}, config_1.keyConfig), content['provider']['environment']);
-    };
-    ServerlessSecure.prototype.updateCustom = function (content) {
-        return _.assign({}, content['custom'], config_1.corsConfig);
-    };
-    ServerlessSecure.prototype.updateLayers = function (content) {
-        return _.assign({}, content['layers'], config_1.secureLayer);
-    };
-    ServerlessSecure.prototype.updateApiKeys = function (content) {
-        var provider = content.provider;
-        if (provider && !_.has(provider, 'apiKeys')) {
-            return ['sls-secure-auth'];
-        }
-        return _.uniq(provider['apiKeys']);
-    };
     ServerlessSecure.prototype.getcompleteFunction = function () {
         var _this = this;
         var funcName = {};
@@ -244,96 +220,10 @@ var ServerlessSecure = (function () {
             return (__assign(__assign({}, funcName), (_a = {}, _a[func] = _this.serverless.service.getFunction(func), _a)));
         });
     };
-    ServerlessSecure.prototype.setOptions = function (events) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, _.map(events, function (res) {
-                            if (_.has(res, 'http') || _.has(res, 'httpApi')) {
-                                res.http = __assign(__assign({}, res.http), { cors: '${self:custom.corsValue}' });
-                                if (!_.has(res['http'], 'private') || res['http']['private'] !== true) {
-                                    res.http['authorizer'] = 'secureAuthorizer';
-                                }
-                                if (!_.has(res['httpApi'], 'private') || res['httpApi']['private'] !== true) {
-                                    res.http['authorizer'] = 'secureAuthorizer';
-                                }
-                            }
-                        })];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
-        });
-    };
-    ServerlessSecure.prototype.updateFunctions = function (content, opath) {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (opath !== '.' && !content['functions'][opath]) {
-                            content['functions'] = _.assign(content['functions'], config_1.secureFunc(opath));
-                        }
-                        return [4, _.mapValues(content['functions'], function (ele, item) { return __awaiter(_this, void 0, void 0, function () {
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            if (!(opath === '.' || opath === item)) return [3, 3];
-                                            if (!_.has(ele, 'events') || !ele['events'].length) {
-                                                ele['events'] = config_1.secureFunc(item)[item]['events'];
-                                            }
-                                            return [4, this.setOptions(ele['events'] || [])];
-                                        case 1:
-                                            _a.sent();
-                                            return [4, this.cleanFunction(ele)];
-                                        case 2:
-                                            _a.sent();
-                                            _a.label = 3;
-                                        case 3: return [2];
-                                    }
-                                });
-                            }); })];
-                    case 1:
-                        _a.sent();
-                        return [2, content['functions']];
-                }
-            });
-        });
-    };
-    ServerlessSecure.prototype.updateSession = function (content, opath) {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        content['functions'][opath] = __assign(__assign({}, config_1.sessionFunc(opath)[opath]), content['functions'][opath]);
-                        return [4, _.mapValues(content['functions'], function (ele) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-                                return [2, this.cleanFunction(ele)];
-                            }); }); })];
-                    case 1:
-                        _a.sent();
-                        return [2, content['functions']];
-                }
-            });
-        });
-    };
-    ServerlessSecure.prototype.cleanFunction = function (ele) {
-        if (_.has(ele, 'events') && ele['events'].length === 0) {
-            delete ele['events'];
-        }
-        if (_.has(ele, 'events') && _.has(ele['events'][0], 'http')) {
-            ele['events'][0].http['cors'] = '${self:custom.corsValue}';
-        }
-        if (_.has(ele, 'name')) {
-            delete ele['name'];
-        }
-        this.functionList.push(ele);
-    };
     ServerlessSecure.prototype.contentUpdate = function (_content) {
         var content = _content;
-        content['provider']['apiKeys'] = this.updateApiKeys(content);
-        content['provider']['environment'] = this.updateEnv(content);
+        content['provider']['apiKeys'] = helper_1.default.updateApiKeys(content);
+        content['provider']['environment'] = helper_1.default.updateEnv(content);
         delete content['provider']['stage'];
         delete content['provider']['region'];
         delete content['provider']['variableSyntax'];
@@ -375,9 +265,9 @@ var ServerlessSecure = (function () {
                         _b = _d.sent();
                         _d.label = 6;
                     case 6:
-                        _b;
+                        content = _b;
                         return [3, 10];
-                    case 7: return [4, this.mapWhitelist(content, opath, commands)];
+                    case 7: return [4, this.mapWhitelist(content, commands)];
                     case 8:
                         content = _d.sent();
                         return [3, 10];
@@ -404,64 +294,49 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.formatIpaddress = function (ips, opath) {
-        if (opath === void 0) { opath = ''; }
-        ips.push(opath);
-        var regx = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/g;
-        ips = _.uniq(ips.join(' ').match(regx));
-        return ips.join(' ');
-    };
-    ServerlessSecure.prototype.setList = function (ips, Effect, opath) {
-        if (ips === void 0) { ips = []; }
-        return _.assign({}, config_1.whiteList, {
-            Effect: Effect,
-            Condition: {
-                IpAddress: {
-                    aws: {
-                        SourceIp: this.formatIpaddress(ips, opath)
-                    }
-                }
-            }
-        });
-    };
-    ServerlessSecure.prototype.mapWhitelist = function (content, opath, commands) {
-        if (opath === void 0) { opath = ''; }
+    ServerlessSecure.prototype.mapWhitelist = function (content, commands) {
         return __awaiter(this, void 0, void 0, function () {
-            var provider, Effect, _a, resourcePolicy, findValuesDeepByKey, _i, resourcePolicy_1, element, ips;
+            var opath, provider, Effect, _list, _a, resourcePolicy, _i, resourcePolicy_1, element, ips;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        opath = this.options['ip'] || '.';
                         provider = content.provider;
                         Effect = (commands == 'secure-whitelist') ? 'Allow' : 'Deny';
-                        _a = provider.resourcePolicy, resourcePolicy = _a === void 0 ? [this.setList([], Effect, opath)] : _a;
-                        findValuesDeepByKey = function (obj, key, res) {
-                            if (res === void 0) { res = []; }
-                            return (_.cloneDeepWith(obj, function (v, k) { k == key && res.push(v); }) && res);
+                        _list = {
+                            Effect: Effect,
+                            Principal: '*',
+                            Action: 'execute-api:Invoke',
+                            Resource: this.compileResourcePolicy()
                         };
-                        if (!resourcePolicy.filter(function (ele) { return (ele.Effect == Effect && findValuesDeepByKey(ele.Condition, 'SourceIp')); }).length) {
-                            resourcePolicy.push(this.setList([], Effect, opath));
+                        _a = provider.resourcePolicy, resourcePolicy = _a === void 0 ? [helper_1.default.setList([], opath, _list)] : _a;
+                        if (!resourcePolicy.filter(function (ele) { return (ele.Effect == Effect && helper_1.default.findValuesDeepByKey(ele.Condition, 'SourceIp')); }).length) {
+                            resourcePolicy.push(helper_1.default.setList([], opath, _list));
                         }
                         else {
                             for (_i = 0, resourcePolicy_1 = resourcePolicy; _i < resourcePolicy_1.length; _i++) {
                                 element = resourcePolicy_1[_i];
-                                ips = findValuesDeepByKey(element.Condition, 'SourceIp');
+                                ips = helper_1.default.findValuesDeepByKey(element.Condition, 'SourceIp');
                                 if (ips && ips.length && element.Effect === Effect) {
-                                    element.Condition.IpAddress.aws.SourceIp = this.formatIpaddress(ips, opath);
+                                    element.Condition.IpAddress.aws.SourceIp = helper_1.default.formatIpaddress(ips, opath);
                                 }
                             }
                         }
-                        provider = __assign(__assign({}, provider), { resourcePolicy: resourcePolicy });
-                        content = __assign(__assign({}, content), { provider: provider });
+                        content = __assign(__assign({}, content), { provider: __assign(__assign({}, provider), { resourcePolicy: resourcePolicy }) });
                         if (!!this.isYaml) return [3, 2];
-                        return [4, this.sourceFile.updateProperty('provider', provider)];
+                        return [4, this.sourceFile.updateProperty('provider', content['provider'])];
                     case 1:
                         _b.sent();
-                        return [3, 3];
+                        return [2, content];
                     case 2: return [2, content];
-                    case 3: return [2];
                 }
             });
         });
+    };
+    ServerlessSecure.prototype.compileResourcePolicy = function () {
+        var valid = this.serverless.service.validate();
+        var _a = valid.initialServerlessConfig.provider.region, region = _a === void 0 ? '*' : _a;
+        return "arn:aws:lambda:" + region + ":*:function:*";
     };
     ServerlessSecure.prototype.mapSecure = function (content, opath, commands) {
         return __awaiter(this, void 0, void 0, function () {
@@ -472,26 +347,26 @@ var ServerlessSecure = (function () {
                         _b.trys.push([0, 10, , 11]);
                         if (!('functions' in content)) return [3, 9];
                         if (!(commands === 'secure')) return [3, 2];
-                        return [4, this.updateFunctions(content, opath)];
+                        return [4, helper_1.default.updateFunctions(content, opath)];
                     case 1:
                         _a = _b.sent();
                         return [3, 4];
-                    case 2: return [4, this.updateSession(content, opath)];
+                    case 2: return [4, helper_1.default.updateSession(content, opath)];
                     case 3:
                         _a = _b.sent();
                         _b.label = 4;
                     case 4:
                         func = _a;
-                        return [4, this.sourceFile.updateProperty('custom', config_1.sortKeys(this.updateCustom(content)))];
+                        return [4, this.sourceFile.updateProperty('custom', helper_1.default.updateCustom(content))];
                     case 5:
                         _b.sent();
-                        return [4, this.sourceFile.updateProperty('layers', this.updateLayers(content))];
+                        return [4, this.sourceFile.updateProperty('layers', helper_1.default.updateLayers(content))];
                     case 6:
                         _b.sent();
-                        return [4, this.sourceFile.updateProperty('provider', config_1.sortKeys(content['provider']))];
+                        return [4, this.sourceFile.updateProperty('provider', helper_1.default.sortKeys(content['provider']))];
                     case 7:
                         _b.sent();
-                        return [4, this.sourceFile.updateProperty('functions', config_1.sortKeys(_.assign({}, func, config_1.secureConfig)))];
+                        return [4, this.sourceFile.updateProperty('functions', helper_1.default.sortKeys(_.assign({}, func, config_1.default.secureConfig)))];
                     case 8:
                         _b.sent();
                         _b.label = 9;
@@ -507,7 +382,7 @@ var ServerlessSecure = (function () {
     };
     ServerlessSecure.prototype.mapSecureYML = function (_content, opath, commands) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, _a, _b, _c, _d, _e, error_4;
+            var _a, _b, _c, _d, _e, error_4;
             return __generator(this, function (_f) {
                 switch (_f.label) {
                     case 0:
@@ -515,27 +390,29 @@ var ServerlessSecure = (function () {
                         if (!('functions' in _content)) return [3, 7];
                         _a = [__assign({}, this.contentUpdate(_content))];
                         _b = {};
-                        return [4, config_1.sortKeys(this.updateCustom(_content))];
+                        return [4, helper_1.default.updateCustom(_content)];
                     case 1:
                         _b.custom = _f.sent();
-                        return [4, this.updateLayers(_content)];
+                        return [4, helper_1.default.updateLayers(_content)];
                     case 2:
-                        content = __assign.apply(void 0, _a.concat([(_b.layers = _f.sent(), _b)]));
-                        _c = content;
+                        _content = __assign.apply(void 0, _a.concat([(_b.layers = _f.sent(), _b)]));
+                        _c = _content;
                         _d = 'functions';
                         if (!(commands === 'secure')) return [3, 4];
-                        return [4, this.updateFunctions(content, opath)];
+                        return [4, helper_1.default.updateFunctions(_content, opath)];
                     case 3:
                         _e = _f.sent();
                         return [3, 6];
-                    case 4: return [4, this.updateSession(content, opath)];
+                    case 4: return [4, helper_1.default.updateSession(_content, opath)];
                     case 5:
                         _e = _f.sent();
                         _f.label = 6;
                     case 6:
                         _c[_d] = _e;
                         _f.label = 7;
-                    case 7: return [3, 9];
+                    case 7:
+                        _content['functions'] = _.assign({}, _content['functions'], config_1.default.secureConfig);
+                        return [2, _content];
                     case 8:
                         error_4 = _f.sent();
                         this.notification(error_4.message, 'error');
@@ -545,50 +422,6 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.ignoreErrors = function (sourceFile) {
-        var tsIgnore = '//@ts-ignore\n\t\t\t\t\t\t';
-        var source = sourceFile.getSourceFile().getFullText();
-        var commands = this.serverless['processedInput']['commands'][0];
-        if (commands == 'secure-whitelist' || commands == 'secure-blacklist') {
-            return source;
-        }
-        source = _.replace(source, new RegExp('cors:', 'g'), tsIgnore + "cors:");
-        return _.replace(source, new RegExp('authorizer:', 'g'), tsIgnore + "authorizer:");
-    };
-    ServerlessSecure.prototype.writeTS = function (sourceFile) {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, fse.writeFile(this.secureTS, this.ignoreErrors(sourceFile), { encoding: 'utf8' })
-                            .then(this.serverless.cli.log('TS File Updated!'))
-                            .catch(function (e) { return _this.notification(e.message, 'error'); })];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
-        });
-    };
-    ;
-    ServerlessSecure.prototype.writeYAML = function (content) {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.yawn.json = _.assign({}, this.yawn.json, content);
-                        return [4, fse.writeFile(this.secureYAML, this.yawn.yaml, { encoding: 'utf8' })
-                                .then(this.serverless.cli.log('YAML File Updated!'))
-                                .catch(function (e) { return _this.notification(e.message, 'error'); })];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
-            });
-        });
-    };
-    ;
     ServerlessSecure.prototype.mkdirRecursively = function (folderpath) {
         try {
             fse.mkdirsSync(folderpath);
@@ -616,7 +449,7 @@ var ServerlessSecure = (function () {
                 switch (_a.label) {
                     case 0:
                         zip = new jszip_1.default();
-                        URL = config_1.ZIP_URL + "pullzip?key=" + this.ApiKey;
+                        URL = config_1.default.ZIP_URL + "pullzip?key=" + this.ApiKey;
                         return [4, axios_1.default.get(URL, { responseType: 'arraybuffer' })];
                     case 1:
                         data = (_a.sent()).data;
@@ -690,18 +523,75 @@ var ServerlessSecure = (function () {
             });
         });
     };
+    ServerlessSecure.prototype.ignoreErrors = function (sourceFile) {
+        var tsIgnore = '//@ts-ignore\n\t\t\t\t\t\t';
+        var source = sourceFile.getSourceFile().getFullText();
+        var commands = this.serverless['processedInput']['commands'][0];
+        if (commands == 'secure-whitelist' || commands == 'secure-blacklist') {
+            return source;
+        }
+        source = _.replace(source, new RegExp('cors:', 'g'), tsIgnore + "cors:");
+        return _.replace(source, new RegExp('authorizer:', 'g'), tsIgnore + "authorizer:");
+    };
+    ServerlessSecure.prototype.writeTS = function (sourceFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, fse.writeFile(this.secureTS, this.ignoreErrors(sourceFile), { encoding: 'utf8' })
+                            .then(this.serverless.cli.log('TS File Updated!'))
+                            .catch(function (e) { return _this.notification(e.message, 'error'); })];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        });
+    };
+    ;
+    ServerlessSecure.prototype.writeYAML = function (content) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.yawn.json = _.assign({}, this.yawn.json, content);
+                        return [4, fse.writeFile(this.secureYAML, this.yawn.yaml, { encoding: 'utf8' })
+                                .then(this.serverless.cli.log('YAML File Updated!'))
+                                .catch(function (e) { return _this.notification(e.message, 'error'); })];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        });
+    };
+    ;
     ServerlessSecure.prototype.notification = function (message, type) {
-        this.serverless.cli.log(message);
         switch (type) {
             case 'success':
+                this.serverless.cli.log("\u2705 " + message);
                 break;
             case 'warning':
-                console.error(message);
+                this.serverless.cli.log("\u274E " + message);
                 break;
             case 'error':
                 throw new Error(message);
             default:
                 break;
+        }
+    };
+    ServerlessSecure.prototype.searchReference = function () {
+        var options = this.serverless['processedInput']['options'];
+        var request = _.keysIn(options)[0];
+        this.policy = helper_1.default.getPolicyType(request, options[request]);
+    };
+    ServerlessSecure.prototype.listReference = function () {
+        if (this.policy.length) {
+            this.notification(JSON.stringify(this.policy, true, 2), 'success');
+        }
+        else {
+            this.notification('No reference found!', 'warning');
         }
     };
     return ServerlessSecure;

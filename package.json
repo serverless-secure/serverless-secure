@@ -1,6 +1,6 @@
 {
   "name": "serverless-secure",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Lambda Serverless Secure tools to improving the security of your serverless applications.",
   "keywords": [
     "AWS",
