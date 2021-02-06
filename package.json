@@ -1,7 +1,21 @@
 {
   "name": "serverless-secure",
-  "version": "1.0.3",
-  "description": "Lambda  Serverless Security Session",
+  "version": "1.0.4",
+  "description": "Lambda Serverless Secure tools to improving the security of your serverless applications.",
+  "keywords": [
+    "AWS",
+    "Serverless",
+    "Secure",
+    "Lambda",
+    "Amazon Web Services",
+    "Resource-Policy",
+    "Configuration",
+    "Blacklist",
+    "Whitelist",
+    "Security",
+    "Serverless",
+    "Services"
+  ],
   "main": "dist/index.js",
   "scripts": {
     "precommit": "npm run test",
@@ -19,6 +33,9 @@
   "dependencies": {
     "aws-lambda": "^1.0.6",
     "axios": "^0.21.1",
+    "bluebird": "^3.7.2",
+    "chalk": "^4.1.0",
+    "child_process": "^1.0.2",
     "fs-extra": "^9.1.0",
     "iconv-lite": "^0.6.2",
     "jszip": "^3.5.0",
@@ -60,6 +77,9 @@
     "webpack": "^4.46.0",
     "webpack-node-externals": "^1.7.2"
   },
+  "peerDependencies": {
+    "serverless": ">=2.20.1"
+  },
   "jest": {
     "verbose": true,
     "transform": {
@@ -85,12 +105,6 @@
     "type": "git",
     "url": "git+https://github.com/serverless-secure/serverless-secure.git"
   },
-  "keywords": [
-    "Lambda",
-    "Secure",
-    "Serverless",
-    "Services"
-  ],
   "author": "Serverless-Secure <admin@serverless-secure.com>",
   "license": "MIT",
   "bugs": {

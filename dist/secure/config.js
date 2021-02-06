@@ -1,26 +1,33 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.slsCommands = exports.out = exports.input = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.secureFunc = exports.sessionFunc = exports.whiteList = exports.keyConfig = exports.envConfig = exports.hooks = exports.sortKeys = exports.parseHttpPath = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
+exports.slsCommands = exports.out = exports.input = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.secureFunc = exports.sessionFunc = exports.whiteList = exports.keyConfig = exports.envConfig = exports.hooks = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
 exports.ZIP_URL = process.env.ZIP_URL || 'https://api.serverless-secure.com/layers/pullzip/';
-exports.parseHttpPath = function (_path) { return _path[0] === '/' ? _path : "/" + _path; };
-exports.sortKeys = function (data) { return Object.fromEntries(Object.entries(data).sort()); };
 exports.hooks = function (_this) { return ({
     'before:package:finalize': _this.apply.bind(_this),
     'before:secure:init': _this.beforeFile.bind(_this),
     'before:secure:create': _this.beforePath.bind(_this),
     'after:secure:create': _this.afterPath.bind(_this),
-    'before:secure-session:init': _this.beforeFile.bind(_this),
-    'before:secure-session:create': _this.beforePath.bind(_this),
-    'after:secure-session:create': _this.afterPath.bind(_this),
+    'before:secure-key:init': _this.beforeFile.bind(_this),
+    'before:secure-key:create': _this.createKey.bind(_this),
+    'after:secure-key:create': _this.setSecretKey.bind(_this),
+    'before:secure-blacklist:init': _this.beforeFile.bind(_this),
+    'before:secure-blacklist:create': _this.beforePath.bind(_this),
+    'after:secure-blacklist:create': _this.afterPath.bind(_this),
     'before:secure-whitelist:init': _this.beforeFile.bind(_this),
     'before:secure-whitelist:create': _this.beforePath.bind(_this),
     'after:secure-whitelist:create': _this.afterPath.bind(_this),
-    'before:secure-blacklist:init': _this.beforeFile.bind(_this),
-    'before:secure-blacklist:create': _this.beforePath.bind(_this),
-    'after:secure-blacklist:create': _this.afterPath.bind(_this)
+    'before:secure-policy:init': _this.beforeFile.bind(_this),
+    'before:secure-policy:create': _this.searchReference.bind(_this),
+    'after:secure-policy:create': _this.listReference.bind(_this),
+    'before:secure-session:init': _this.beforeFile.bind(_this),
+    'before:secure-session:create': _this.beforePath.bind(_this),
+    'after:secure-session:create': _this.afterPath.bind(_this),
+    'before:secure-secret:init': _this.beforeFile.bind(_this),
+    'before:secure-secret:create': _this.createKey.bind(_this),
+    'after:secure-secret:create': _this.buildRSA.bind(_this),
 }); };
 exports.envConfig = {
     STAGE: '${self:provider.stage}'
@@ -43,7 +50,7 @@ exports.sessionFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: "<create handler function>.handler." + name,
+            handler: "<create handler path>.handler." + name,
             events: [
                 {
                     http: {
@@ -61,7 +68,7 @@ exports.secureFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: "<create handler function>.handler." + name,
+            handler: "<create handler path>.handler." + name,
             events: [
                 {
                     http: {
@@ -116,12 +123,12 @@ exports.secureLayer = {
     SecureDependenciesNodeModule: { path: 'secure_layer', description: 'secure dependencies' }
 };
 exports.input = {
-    usage: 'Define your secure input file: --input <filename> or -in <*>',
+    usage: 'Define your secure input file: --input <filename> or --in <*>',
     required: false,
     shortcut: 'in',
 };
 exports.out = {
-    usage: 'Define your secure output file: --out <filename> or -o <*>',
+    usage: 'Define your secure output file: --out <filename> or --o <*>',
     required: false,
     shortcut: 'o',
 };
@@ -133,11 +140,76 @@ exports.slsCommands = (_a = {
                 input: exports.input,
                 out: exports.out,
                 path: {
-                    usage: 'Specify which function you wish to secure: --path <Function Name> or -p <*>',
+                    usage: 'Specify which function you wish to secure: --path <Function Name> or --p <*>',
                     required: false,
                     shortcut: 'p',
                 }
             }
+        },
+        'secure-key': {
+            usage: 'How to create a KMS Secret',
+            lifecycleEvents: ['init', 'create'],
+            options: {
+                passphrase: {
+                    usage: 'Specify Secrect Passphrase: --passphrase <Function Name> or --pass <*>',
+                    required: true,
+                    shortcut: 'pass',
+                },
+            }
+        }
+    },
+    _a['secure-policy'] = {
+        usage: 'How to secure your lambda policies',
+        lifecycleEvents: ['init', 'create'],
+        options: {
+            Action: {
+                usage: 'Reference your Action: --Action <Name> or --a <*>',
+                required: false,
+                shortcut: 'a',
+            },
+            Arn: {
+                usage: 'Reference your Arn: --Arn <Name> or --arn <*>',
+                required: false,
+                shortcut: 'arn',
+            },
+            Condition: {
+                usage: 'Reference your Condition: --Condition <Name> or --con <*>',
+                required: false,
+                shortcut: 'con',
+            },
+            Path: {
+                usage: 'Reference your AWS Path: --Path <Name> or --p <*>',
+                required: false,
+                shortcut: 'p',
+            },
+            Policy: {
+                usage: 'Reference your Policy: --Policy <Name>or --pol <*>',
+                required: false,
+                shortcut: 'pol',
+            },
+            Resource: {
+                usage: 'Reference your Resource: --Resource <Name> or --r <*>',
+                required: false,
+                shortcut: 'r',
+            },
+            Sid: {
+                usage: 'Reference your Sid: --Sid <Name> or --s <*>',
+                required: false,
+                shortcut: 's',
+            }
+        }
+    },
+    _a['secure-secret'] = {
+        usage: 'How to secure all secrets via Encrypted KeyPairs',
+        lifecycleEvents: ['init', 'create'],
+        options: {
+            input: exports.input,
+            out: exports.out,
+            passphrase: {
+                usage: 'Specify Secrect Passphrase: --passphrase <Function Name> or --pass <*>',
+                required: true,
+                shortcut: 'pass',
+            },
         }
     },
     _a['secure-session'] = {
@@ -147,22 +219,9 @@ exports.slsCommands = (_a = {
             input: exports.input,
             out: exports.out,
             path: {
-                usage: 'Specify your session function: --path <Function Name> or -p <*>',
+                usage: 'Specify your session function: --path <Function Name> or --p <*>',
                 required: true,
                 shortcut: 'p',
-            }
-        }
-    },
-    _a['secure-whitelist'] = {
-        usage: 'How to whitelist your lambda functions',
-        lifecycleEvents: ['init', 'create'],
-        options: {
-            input: exports.input,
-            out: exports.out,
-            ip: {
-                usage: 'Specify your IPAddress: --ip <IPAddress> or -ip <*>',
-                required: false,
-                shortcut: 'ip',
             }
         }
     },
@@ -173,10 +232,33 @@ exports.slsCommands = (_a = {
             input: exports.input,
             out: exports.out,
             ip: {
-                usage: 'Specify your IPAddress: --ip <IPAddress> or -ip <*>',
-                required: false,
-                shortcut: 'ip',
+                usage: 'Specify your IPAddress: --ip <IPAddress>',
+                required: false
+            }
+        }
+    },
+    _a['secure-whitelist'] = {
+        usage: 'How to whitelist your lambda functions',
+        lifecycleEvents: ['init', 'create'],
+        options: {
+            input: exports.input,
+            out: exports.out,
+            ip: {
+                usage: 'Specify your IPAddress: --ip <IPAddress>',
+                required: false
             }
         }
     },
     _a);
+exports.default = {
+    ZIP_URL: exports.ZIP_URL,
+    corsConfig: exports.corsConfig,
+    secureConfig: exports.secureConfig,
+    secureLayer: exports.secureLayer,
+    keyConfig: exports.keyConfig,
+    slsCommands: exports.slsCommands,
+    whiteList: exports.whiteList,
+    sessionFunc: exports.sessionFunc,
+    secureFunc: exports.secureFunc,
+    hooks: exports.hooks
+};
