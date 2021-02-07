@@ -1,10 +1,10 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.slsCommands = exports.out = exports.input = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.secureFunc = exports.sessionFunc = exports.whiteList = exports.keyConfig = exports.envConfig = exports.hooks = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
+exports.slsCommands = exports.out = exports.input = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.secretFunc = exports.secureFunc = exports.sessionFunc = exports.whiteList = exports.keyConfig = exports.envConfig = exports.hooks = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
-exports.ZIP_URL = process.env.ZIP_URL || 'https://api.serverless-secure.com/layers/pullzip/';
+exports.ZIP_URL = process.env.ZIP_URL || 'https://api.serverless-secure.com/layers/';
 exports.hooks = function (_this) { return ({
     'before:package:finalize': _this.apply.bind(_this),
     'before:secure:init': _this.beforeFile.bind(_this),
@@ -15,10 +15,8 @@ exports.hooks = function (_this) { return ({
     'after:secure-key:create': _this.setSecretKey.bind(_this),
     'before:secure-blacklist:init': _this.beforeFile.bind(_this),
     'before:secure-blacklist:create': _this.beforePath.bind(_this),
-    'after:secure-blacklist:create': _this.afterPath.bind(_this),
     'before:secure-whitelist:init': _this.beforeFile.bind(_this),
     'before:secure-whitelist:create': _this.beforePath.bind(_this),
-    'after:secure-whitelist:create': _this.afterPath.bind(_this),
     'before:secure-policy:init': _this.beforeFile.bind(_this),
     'before:secure-policy:create': _this.searchReference.bind(_this),
     'after:secure-policy:create': _this.listReference.bind(_this),
@@ -27,7 +25,7 @@ exports.hooks = function (_this) { return ({
     'after:secure-session:create': _this.afterPath.bind(_this),
     'before:secure-secret:init': _this.beforeFile.bind(_this),
     'before:secure-secret:create': _this.createKey.bind(_this),
-    'after:secure-secret:create': _this.buildRSA.bind(_this),
+    'after:secure-secret:create': _this.afterPath.bind(_this),
 }); };
 exports.envConfig = {
     STAGE: '${self:provider.stage}'
@@ -76,6 +74,23 @@ exports.secureFunc = function (name) {
                         path: "" + name,
                         cors: '${self:custom.corsValue}',
                         authorizer: 'secureAuthorizer'
+                    }
+                }
+            ]
+        },
+        _a);
+};
+exports.secretFunc = function (name) {
+    var _a;
+    return (_a = {},
+        _a[name] = {
+            handler: "./secret_layers/handler." + name,
+            events: [
+                {
+                    http: {
+                        method: 'post',
+                        path: "" + name,
+                        cors: '${self:custom.corsValue}'
                     }
                 }
             ]
@@ -210,6 +225,11 @@ exports.slsCommands = (_a = {
                 required: true,
                 shortcut: 'pass',
             },
+            path: {
+                usage: 'Specify your Secrect function: --path <Function Name> or --p <*>',
+                required: false,
+                shortcut: 'p',
+            }
         }
     },
     _a['secure-session'] = {
@@ -260,5 +280,6 @@ exports.default = {
     whiteList: exports.whiteList,
     sessionFunc: exports.sessionFunc,
     secureFunc: exports.secureFunc,
+    secretFunc: exports.secretFunc,
     hooks: exports.hooks
 };

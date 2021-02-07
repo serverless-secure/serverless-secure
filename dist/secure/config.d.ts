@@ -12,10 +12,8 @@ export declare const hooks: (_this: ServerlessSecure) => {
     'after:secure-key:create': any;
     'before:secure-blacklist:init': any;
     'before:secure-blacklist:create': any;
-    'after:secure-blacklist:create': any;
     'before:secure-whitelist:init': any;
     'before:secure-whitelist:create': any;
-    'after:secure-whitelist:create': any;
     'before:secure-policy:init': any;
     'before:secure-policy:create': any;
     'after:secure-policy:create': any;
@@ -65,6 +63,18 @@ export declare const secureFunc: (name: any) => {
                 path: string;
                 cors: string;
                 authorizer: string;
+            };
+        }[];
+    };
+};
+export declare const secretFunc: (name: any) => {
+    [x: number]: {
+        handler: string;
+        events: {
+            http: {
+                method: string;
+                path: string;
+                cors: string;
             };
         }[];
     };
@@ -197,6 +207,11 @@ export declare const slsCommands: {
                 shortcut: string;
             };
             passphrase: {
+                usage: string;
+                required: boolean;
+                shortcut: string;
+            };
+            path: {
                 usage: string;
                 required: boolean;
                 shortcut: string;
@@ -392,6 +407,11 @@ declare const _default: {
                     required: boolean;
                     shortcut: string;
                 };
+                path: {
+                    usage: string;
+                    required: boolean;
+                    shortcut: string;
+                };
             };
         };
         "secure-session": {
@@ -493,6 +513,18 @@ declare const _default: {
             }[];
         };
     };
+    secretFunc: (name: any) => {
+        [x: number]: {
+            handler: string;
+            events: {
+                http: {
+                    method: string;
+                    path: string;
+                    cors: string;
+                };
+            }[];
+        };
+    };
     hooks: (_this: ServerlessSecure) => {
         'before:package:finalize': any;
         'before:secure:init': any;
@@ -503,10 +535,8 @@ declare const _default: {
         'after:secure-key:create': any;
         'before:secure-blacklist:init': any;
         'before:secure-blacklist:create': any;
-        'after:secure-blacklist:create': any;
         'before:secure-whitelist:init': any;
         'before:secure-whitelist:create': any;
-        'after:secure-whitelist:create': any;
         'before:secure-policy:init': any;
         'before:secure-policy:create': any;
         'after:secure-policy:create': any;
