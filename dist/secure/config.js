@@ -1,7 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.slsCommands = exports.out = exports.input = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.secretFunc = exports.secureFunc = exports.sessionFunc = exports.whiteList = exports.keyConfig = exports.envConfig = exports.hooks = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
+var path = __importStar(require("path"));
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
 exports.ZIP_URL = process.env.ZIP_URL || 'https://api.serverless-secure.com/layers/';
@@ -48,7 +68,7 @@ exports.sessionFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: "<create handler path>.handler." + name,
+            handler: path.dirname("/handler." + name),
             events: [
                 {
                     http: {
@@ -66,7 +86,7 @@ exports.secureFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: "<create handler path>.handler." + name,
+            handler: path.dirname("/handler." + name),
             events: [
                 {
                     http: {
@@ -84,7 +104,7 @@ exports.secretFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: "./secret_layers/handler." + name,
+            handler: path.dirname("secret_layers/handler." + name),
             events: [
                 {
                     http: {
@@ -118,7 +138,7 @@ exports.corsConfig = {
 };
 exports.secureConfig = {
     secureToken: {
-        handler: 'secure_layer/handler.secureToken',
+        handler: path.dirname('secure_layer/handler.secureToken'),
         events: [
             {
                 http: {
@@ -131,7 +151,7 @@ exports.secureConfig = {
         ]
     },
     secureAuthorizer: {
-        handler: 'secure_layer/handler.secureAuthorizer'
+        handler: path.dirname('secure_layer/handler.secureAuthorizer')
     }
 };
 exports.secureLayer = {
@@ -224,11 +244,6 @@ exports.slsCommands = (_a = {
                 usage: 'Specify Secrect Passphrase: --passphrase <Function Name> or --pass <*>',
                 required: true,
                 shortcut: 'pass',
-            },
-            path: {
-                usage: 'Specify your Secrect function: --path <Function Name> or --p <*>',
-                required: false,
-                shortcut: 'p',
             }
         }
     },

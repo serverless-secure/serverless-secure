@@ -69,10 +69,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compileResourcePolicy = exports.generateKeys = exports.formatIpaddress = exports.setList = exports.cleanFunction = exports.updateFunctions = exports.setOptions = exports.getPolicyType = exports.updateSession = exports.updateApiKeys = exports.parseData = exports.updateEnv = exports.updateLayers = exports.updateCustom = exports.findValuesDeepByKey = exports.sortKeys = exports.parseHttpPath = void 0;
-var _ = __importStar(require("lodash"));
+exports.compileResourcePolicy = exports.unZipPackage = exports.downloadSecureLayer = exports.mkdirRecursively = exports.generateKeys = exports.formatIpaddress = exports.setList = exports.cleanFunction = exports.updateFunctions = exports.setOptions = exports.getPolicyType = exports.updateSession = exports.updateApiKeys = exports.parseData = exports.updateEnv = exports.updateLayers = exports.updateCustom = exports.findValuesDeepByKey = exports.sortKeys = exports.parseHttpPath = void 0;
 var config_1 = require("./config");
 var _data = __importStar(require("./managed_policies"));
+var config_2 = __importDefault(require("./config"));
+var fse = __importStar(require("fs-extra"));
+var _ = __importStar(require("lodash"));
+var iconv_lite_1 = __importDefault(require("iconv-lite"));
+var path = __importStar(require("path"));
+var jszip_1 = __importDefault(require("jszip"));
+var axios_1 = __importDefault(require("axios"));
 var crypto_1 = __importDefault(require("crypto"));
 exports.parseHttpPath = function (_path) { return _path[0] === '/' ? _path : "/" + _path; };
 exports.sortKeys = function (data) { return Object.fromEntries(Object.entries(data).sort()); };
@@ -143,7 +149,7 @@ exports.setOptions = function (events) { return __awaiter(void 0, void 0, void 0
 }); };
 exports.updateFunctions = function (content, opath) {
     if (opath !== '.' && !content['functions'][opath]) {
-        content['functions'] = _.assign(content['functions'], config_1.secureFunc(opath));
+        content['functions'] = _.assign({}, content['functions'], config_1.secureFunc(opath));
     }
     _.mapValues(content['functions'], function (ele, item) { return __awaiter(void 0, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -209,6 +215,76 @@ exports.generateKeys = function (passphrase) {
         }
     });
 };
+exports.mkdirRecursively = function (folderpath, _this) {
+    try {
+        fse.mkdirsSync(folderpath);
+        return true;
+    }
+    catch (e) {
+        if (e.errno === 34) {
+            exports.mkdirRecursively(path.dirname(folderpath), _this);
+            exports.mkdirRecursively(folderpath, _this);
+        }
+        else if (e.errno === 47) {
+            return true;
+        }
+        else {
+            _this.notification('Error: Unable to create folder %s (errno: %s)', 'error');
+            process.exit(2);
+        }
+    }
+};
+exports.downloadSecureLayer = function (Layer, _this) { return __awaiter(void 0, void 0, void 0, function () {
+    var data, zip;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4, axios_1.default.get(config_2.default.ZIP_URL + "pullzip?=" + Layer, { responseType: 'arraybuffer' })];
+            case 1:
+                data = (_a.sent()).data;
+                zip = new jszip_1.default();
+                return [4, zip.loadAsync(data)
+                        .then(function (content) { return exports.unZipPackage(zip, content, Layer, _this); })
+                        .catch(function (e) { return _this.notification(e.message, 'error'); })];
+            case 2:
+                _a.sent();
+                return [2];
+        }
+    });
+}); };
+exports.unZipPackage = function (zip, data, Layer, _this) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        try {
+            _.keys(data.files).forEach(function (filepath) { return __awaiter(void 0, void 0, void 0, function () {
+                var file, savePath, buffer, decoded;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            file = zip.files[filepath];
+                            savePath = path.resolve(process.cwd() + ("/" + Layer + "/" + filepath));
+                            if (!file.dir) return [3, 1];
+                            if (!fse.existsSync(savePath)) {
+                                exports.mkdirRecursively(savePath, _this);
+                            }
+                            return [3, 4];
+                        case 1: return [4, file.async('nodebuffer')];
+                        case 2:
+                            buffer = _a.sent();
+                            decoded = iconv_lite_1.default.decode(buffer, 'utf8');
+                            return [4, fse.writeFile(savePath, decoded, { encoding: 'utf8' })];
+                        case 3:
+                            _a.sent();
+                            _a.label = 4;
+                        case 4: return [2];
+                    }
+                });
+            }); });
+        }
+        catch (error) {
+            _this.notification(error.message, 'error');
+        }
+        return [2];
+    });
+}); };
 exports.compileResourcePolicy = function (_this, commands) {
     var _a = _this.valid.initialServerlessConfig.provider.region, region = _a === void 0 ? '*' : _a;
     var ResourcePolicy = {
@@ -251,6 +327,7 @@ exports.compileResourcePolicy = function (_this, commands) {
 exports.default = {
     compileResourcePolicy: exports.compileResourcePolicy,
     findValuesDeepByKey: exports.findValuesDeepByKey,
+    downloadSecureLayer: exports.downloadSecureLayer,
     updateFunctions: exports.updateFunctions,
     formatIpaddress: exports.formatIpaddress,
     cleanFunction: exports.cleanFunction,

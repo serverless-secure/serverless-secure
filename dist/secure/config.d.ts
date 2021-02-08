@@ -211,11 +211,6 @@ export declare const slsCommands: {
                 required: boolean;
                 shortcut: string;
             };
-            path: {
-                usage: string;
-                required: boolean;
-                shortcut: string;
-            };
         };
     };
     "secure-session": {
@@ -403,11 +398,6 @@ declare const _default: {
                     shortcut: string;
                 };
                 passphrase: {
-                    usage: string;
-                    required: boolean;
-                    shortcut: string;
-                };
-                path: {
                     usage: string;
                     required: boolean;
                     shortcut: string;
