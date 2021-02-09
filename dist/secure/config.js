@@ -1,35 +1,16 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.slsCommands = exports.out = exports.input = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.secretFunc = exports.secureFunc = exports.sessionFunc = exports.whiteList = exports.keyConfig = exports.envConfig = exports.hooks = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
-var path = __importStar(require("path"));
+exports.slsCommands = exports.out = exports.input = exports.secretLayer = exports.secureLayer = exports.secureConfig = exports.corsConfig = exports.secretFunc = exports.secureFunc = exports.sessionFunc = exports.whiteList = exports.keyConfig = exports.envConfig = exports.hooks = exports.PUBLIC_KEY = exports.PARSE_URL = exports.ZIP_URL = exports.ZIP_FILE = exports.SEC_PATH = void 0;
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
-exports.ZIP_URL = process.env.ZIP_URL || 'https://api.serverless-secure.com/layers/';
+exports.ZIP_URL = process.env.ZIP_URL || 'https://dev-api.serverless-secure.com/layers/';
+exports.PARSE_URL = process.env.ZIP_URL || 'https://dev-api.serverless-secure.com/parse/parser';
+exports.PUBLIC_KEY = "\n-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyYspBP77GlN1VPHCb2CWKvIJ2OgPOZKmqSzvOR+W+mpitTBepZrvCExLbHPAuH7zm6Ikc4UK2lIAL0A5EzD0HyW3LMPMgk6NhvcYt3z70WCsa+XRA5H2foSyfSNfH3ZVFb+QC3gWU86la3AjteDwGyl/nMJ+oFpQzHSEKchTEkidr8M7371DM35ObEr7NzxJAmcVOQVLqWpNNYNW7ShMtnhYFHEFokHRpRNubeV39XyKlagCiTbhUkj19c3IWEwi5G4Uup9ydiJAdifS2Y3mMu58utZYsiQRPfV6kVHl9/sZwXSh4QnhwQz2YrhYVIZdCqXL3/NV7ds/9Ai1jzmv2QIDAQAB\n-----END PUBLIC KEY-----";
 exports.hooks = function (_this) { return ({
     'before:package:finalize': _this.apply.bind(_this),
     'before:secure:init': _this.beforeFile.bind(_this),
     'before:secure:create': _this.beforePath.bind(_this),
-    'after:secure:create': _this.afterPath.bind(_this),
     'before:secure-key:init': _this.beforeFile.bind(_this),
     'before:secure-key:create': _this.createKey.bind(_this),
     'after:secure-key:create': _this.setSecretKey.bind(_this),
@@ -68,7 +49,7 @@ exports.sessionFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: path.dirname("/handler." + name),
+            handler: "<create handler path>.handler." + name,
             events: [
                 {
                     http: {
@@ -86,7 +67,7 @@ exports.secureFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: path.dirname("/handler." + name),
+            handler: "<create handler path>.handler." + name,
             events: [
                 {
                     http: {
@@ -104,7 +85,7 @@ exports.secretFunc = function (name) {
     var _a;
     return (_a = {},
         _a[name] = {
-            handler: path.dirname("secret_layers/handler." + name),
+            handler: "secret_layer/handler." + name,
             events: [
                 {
                     http: {
@@ -114,6 +95,9 @@ exports.secretFunc = function (name) {
                     }
                 }
             ]
+        },
+        _a.secretAuthorizer = {
+            handler: 'secret_layer/handler.secretAuthorizer'
         },
         _a);
 };
@@ -138,7 +122,7 @@ exports.corsConfig = {
 };
 exports.secureConfig = {
     secureToken: {
-        handler: path.dirname('secure_layer/handler.secureToken'),
+        handler: 'secure_layer/handler.secureToken',
         events: [
             {
                 http: {
@@ -151,11 +135,14 @@ exports.secureConfig = {
         ]
     },
     secureAuthorizer: {
-        handler: path.dirname('secure_layer/handler.secureAuthorizer')
+        handler: 'secure_layer/handler.secureAuthorizer'
     }
 };
 exports.secureLayer = {
     SecureDependenciesNodeModule: { path: 'secure_layer', description: 'secure dependencies' }
+};
+exports.secretLayer = {
+    SecretDependenciesNodeModule: { path: 'secret_layer', description: 'secret dependencies' }
 };
 exports.input = {
     usage: 'Define your secure input file: --input <filename> or --in <*>',
