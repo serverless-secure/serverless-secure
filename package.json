@@ -26,7 +26,7 @@
     "test:snyk": "snyk test",
     "test:sonarQube": "node sonarqube.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "develop": "rimraf dist && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" ",
+    "develop": "rimraf dist && npm run build && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" ",
     "deploy": "npm run build",
     "deploy:compodoc": "compodoc -p tsconfig.json"
   },
