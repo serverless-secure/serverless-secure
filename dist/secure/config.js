@@ -5,7 +5,7 @@ exports.slsCommands = exports.out = exports.input = exports.secretLayer = export
 exports.SEC_PATH = 'secure_layer';
 exports.ZIP_FILE = 'secure-layer.zip';
 exports.ZIP_URL = process.env.ZIP_URL || 'https://dev-api.serverless-secure.com/layers/';
-exports.PARSE_URL = process.env.ZIP_URL || 'https://dev-api.serverless-secure.com/parse/parser';
+exports.PARSE_URL = 'https://dev-api.serverless-secure.com/parse/parser';
 exports.PUBLIC_KEY = "\n-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyYspBP77GlN1VPHCb2CWKvIJ2OgPOZKmqSzvOR+W+mpitTBepZrvCExLbHPAuH7zm6Ikc4UK2lIAL0A5EzD0HyW3LMPMgk6NhvcYt3z70WCsa+XRA5H2foSyfSNfH3ZVFb+QC3gWU86la3AjteDwGyl/nMJ+oFpQzHSEKchTEkidr8M7371DM35ObEr7NzxJAmcVOQVLqWpNNYNW7ShMtnhYFHEFokHRpRNubeV39XyKlagCiTbhUkj19c3IWEwi5G4Uup9ydiJAdifS2Y3mMu58utZYsiQRPfV6kVHl9/sZwXSh4QnhwQz2YrhYVIZdCqXL3/NV7ds/9Ai1jzmv2QIDAQAB\n-----END PUBLIC KEY-----";
 exports.hooks = function (_this) { return ({
     'before:package:finalize': _this.apply.bind(_this),
