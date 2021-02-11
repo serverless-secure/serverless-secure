@@ -118,7 +118,7 @@ exports.parseData = function (data) {
 exports.updateApiKeys = function (content) {
     var provider = content.provider;
     if (provider && !_.has(provider, 'apiKeys')) {
-        return ['sls-secure-auth'];
+        return ['sls-secure-auth${opt:stage, `dev`}'];
     }
     return _.uniq(provider['apiKeys']);
 };
