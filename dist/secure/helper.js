@@ -65,26 +65,60 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.formatIpaddress = exports.setList = exports.cleanFunction = exports.updateFunctions = exports.setOptions = exports.getPolicyType = exports.findValuesDeepByKey = exports.updateSession = exports.updateApiKeys = exports.updateLayers = exports.updateCustom = exports.updateEnv = exports.sortKeys = exports.parseHttpPath = void 0;
-var _ = __importStar(require("lodash"));
+exports.compileResourcePolicy = exports.unZipPackage = exports.downloadSecureLayer = exports.mkdirRecursively = exports.generateKeys = exports.formatIpaddress = exports.setList = exports.cleanFunction = exports.updateFunctions = exports.setOptions = exports.getPolicyType = exports.updateSession = exports.updateApiKeys = exports.parseData = exports.updateEnv = exports.updateLayers = exports.updateCustom = exports.findValuesDeepByKey = exports.sortKeys = exports.parseHttpPath = exports.deCryptMessage = exports.enCryptMessage = void 0;
 var config_1 = require("./config");
 var _data = __importStar(require("./managed_policies"));
+var config_2 = __importDefault(require("./config"));
+var fse = __importStar(require("fs-extra"));
+var _ = __importStar(require("lodash"));
+var iconv_lite_1 = __importDefault(require("iconv-lite"));
+var path = __importStar(require("path"));
+var jszip_1 = __importDefault(require("jszip"));
+var axios_1 = __importDefault(require("axios"));
+var crypto_1 = __importDefault(require("crypto"));
+exports.enCryptMessage = function (message, publicKey) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
+    switch (_a.label) {
+        case 0: return [4, crypto_1.default.publicEncrypt(publicKey, Buffer.from(message)).toString('base64')];
+        case 1: return [2, _a.sent()];
+    }
+}); }); };
+exports.deCryptMessage = function (en_message, privateKey, passphrase) { return __awaiter(void 0, void 0, void 0, function () { return __generator(this, function (_a) {
+    switch (_a.label) {
+        case 0: return [4, crypto_1.default.privateDecrypt({ key: privateKey, passphrase: passphrase }, Buffer.from(en_message, 'base64')).toString('utf8')];
+        case 1: return [2, _a.sent()];
+    }
+}); }); };
 exports.parseHttpPath = function (_path) { return _path[0] === '/' ? _path : "/" + _path; };
 exports.sortKeys = function (data) { return Object.fromEntries(Object.entries(data).sort()); };
-exports.updateEnv = function (content) {
-    return __assign(__assign({}, config_1.keyConfig), content['provider']['environment']);
+exports.findValuesDeepByKey = function (obj, key, res) {
+    if (res === void 0) { res = []; }
+    return (_.cloneDeepWith(obj, function (v, k) { k == key && res.push(v); }) && res);
 };
 exports.updateCustom = function (content) {
     return exports.sortKeys(_.assign({}, content['custom'], config_1.corsConfig));
 };
-exports.updateLayers = function (content) {
-    return _.assign({}, content['layers'], config_1.secureLayer);
+exports.updateLayers = function (content, commands) {
+    return _.assign({}, content['layers'], (commands === 'secure') ? config_1.secureLayer : config_1.secretLayer);
+};
+exports.updateEnv = function (content) {
+    return __assign(__assign({}, config_1.keyConfig), content['provider']['environment']);
+};
+exports.parseData = function (data) {
+    try {
+        return JSON.parse(data);
+    }
+    catch (error) {
+        return data;
+    }
 };
 exports.updateApiKeys = function (content) {
     var provider = content.provider;
     if (provider && !_.has(provider, 'apiKeys')) {
-        return ['sls-secure-auth'];
+        return ['sls-secure-auth${opt:stage, `dev`}'];
     }
     return _.uniq(provider['apiKeys']);
 };
@@ -102,10 +136,6 @@ exports.updateSession = function (content, opath) { return __awaiter(void 0, voi
         }
     });
 }); };
-exports.findValuesDeepByKey = function (obj, key, res) {
-    if (res === void 0) { res = []; }
-    return (_.cloneDeepWith(obj, function (v, k) { k == key && res.push(v); }) && res);
-};
 exports.getPolicyType = function (arnType, word) {
     return _.uniq(_.flattenDeep(exports.findValuesDeepByKey(_data, arnType))).filter(function (ele) { return (!_.isObject(ele) && _.isString(ele) && (ele.match(word) || _.toLower(ele).match(_.toLower(word)))); });
 };
@@ -131,7 +161,7 @@ exports.setOptions = function (events) { return __awaiter(void 0, void 0, void 0
 }); };
 exports.updateFunctions = function (content, opath) {
     if (opath !== '.' && !content['functions'][opath]) {
-        content['functions'] = _.assign(content['functions'], config_1.secureFunc(opath));
+        content['functions'] = _.assign({}, content['functions'], config_1.secureFunc(opath));
     }
     _.mapValues(content['functions'], function (ele, item) { return __awaiter(void 0, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -182,17 +212,151 @@ exports.formatIpaddress = function (ips, opath) {
     ips = _.uniq(ips.join(' ').match(regx));
     return ips.join(' ');
 };
+exports.generateKeys = function (passphrase) {
+    return crypto_1.default.generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+        publicKeyEncoding: {
+            type: 'spki',
+            format: 'pem'
+        },
+        privateKeyEncoding: {
+            type: 'pkcs8',
+            format: 'pem',
+            cipher: "aes-256-cbc",
+            passphrase: passphrase
+        }
+    });
+};
+exports.mkdirRecursively = function (folderpath, _this) {
+    try {
+        fse.mkdirsSync(folderpath);
+        return true;
+    }
+    catch (e) {
+        if (e.errno === 34) {
+            exports.mkdirRecursively(path.dirname(folderpath), _this);
+            exports.mkdirRecursively(folderpath, _this);
+        }
+        else if (e.errno === 47) {
+            return true;
+        }
+        else {
+            _this.notification('Error: Unable to create folder %s (errno: %s)', 'error');
+            process.exit(2);
+        }
+    }
+};
+exports.downloadSecureLayer = function (Layer, _this) { return __awaiter(void 0, void 0, void 0, function () {
+    var data, zip;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                console.log("" + config_2.default.ZIP_URL + Layer);
+                return [4, axios_1.default.get("" + config_2.default.ZIP_URL + Layer, { responseType: 'arraybuffer' })];
+            case 1:
+                data = (_a.sent()).data;
+                zip = new jszip_1.default();
+                return [4, zip.loadAsync(data)
+                        .then(function (content) { return exports.unZipPackage(zip, content, Layer, _this); })
+                        .catch(function (e) { return _this.notification(e.message, 'error'); })];
+            case 2:
+                _a.sent();
+                return [2];
+        }
+    });
+}); };
+exports.unZipPackage = function (zip, data, Layer, _this) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        try {
+            _.keys(data.files).forEach(function (filepath) { return __awaiter(void 0, void 0, void 0, function () {
+                var file, savePath, buffer, decoded;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            file = zip.files[filepath];
+                            savePath = path.resolve(process.cwd() + ("/" + Layer + "/" + filepath));
+                            if (!file.dir) return [3, 1];
+                            if (!fse.existsSync(savePath)) {
+                                exports.mkdirRecursively(savePath, _this);
+                            }
+                            return [3, 4];
+                        case 1: return [4, file.async('nodebuffer')];
+                        case 2:
+                            buffer = _a.sent();
+                            decoded = iconv_lite_1.default.decode(buffer, 'utf8');
+                            return [4, fse.writeFile(savePath, decoded, { encoding: 'utf8' })];
+                        case 3:
+                            _a.sent();
+                            _a.label = 4;
+                        case 4: return [2];
+                    }
+                });
+            }); });
+        }
+        catch (error) {
+            _this.notification(error.message, 'error');
+        }
+        return [2];
+    });
+}); };
+exports.compileResourcePolicy = function (_this, commands) {
+    var _a = _this.valid.initialServerlessConfig.provider.region, region = _a === void 0 ? '*' : _a;
+    var ResourcePolicy = {
+        Effect: 'Allow',
+        Principal: '*',
+        Action: 'execute-api:Invoke',
+        Resource: "*",
+    };
+    switch (commands) {
+        case 'secure-kms':
+            ResourcePolicy.Action = 'kms:*';
+            ResourcePolicy.Resource = _this.keyArn || "arn:aws:kms:" + region + ":*";
+            break;
+        case 'secure-key':
+            ResourcePolicy.Action = 'ssm:*';
+            ResourcePolicy.Resource = "arn:aws:ssm:" + region + ":*";
+            break;
+        case 'secure-blacklist':
+            ResourcePolicy = exports.setList([], _this.options['ip'] || '.', ResourcePolicy);
+            ResourcePolicy.Effect = 'Deny';
+            break;
+        case 'secure-whitelist':
+            ResourcePolicy = exports.setList([], _this.options['ip'] || '.', ResourcePolicy);
+            break;
+        case 'secure':
+            ResourcePolicy.Resource = "arn:aws:lambda:" + region + ":*:function:*";
+            break;
+        case 'secure-secret':
+            ResourcePolicy.Action = 'ssm:getParameters*';
+            ResourcePolicy.Resource = _this.secretArn || "arn:aws:ssm:" + region + ":*";
+            break;
+        case 'secure-session':
+            ResourcePolicy.Resource = "arn:aws:lambda:" + region + ":*:function:*";
+            break;
+        case 'secure-basic':
+            ResourcePolicy.Action = 'execute-api:Invoke';
+            break;
+        default:
+            ResourcePolicy.Action = '*';
+            break;
+    }
+    return ResourcePolicy;
+};
 exports.default = {
+    compileResourcePolicy: exports.compileResourcePolicy,
     findValuesDeepByKey: exports.findValuesDeepByKey,
+    downloadSecureLayer: exports.downloadSecureLayer,
     updateFunctions: exports.updateFunctions,
     formatIpaddress: exports.formatIpaddress,
     cleanFunction: exports.cleanFunction,
     updateApiKeys: exports.updateApiKeys,
     updateSession: exports.updateSession,
     getPolicyType: exports.getPolicyType,
+    generateKeys: exports.generateKeys,
     updateCustom: exports.updateCustom,
     updateEnv: exports.updateEnv,
     updateLayers: exports.updateLayers,
+    parseData: exports.parseData,
     sortKeys: exports.sortKeys,
     setList: exports.setList
 };

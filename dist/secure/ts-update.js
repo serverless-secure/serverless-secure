@@ -64,8 +64,8 @@ var TSConfigUpdate = (function () {
         }
     };
     TSConfigUpdate.prototype.updateProperty = function (name, content) {
-        this.removeProperty(name);
         try {
+            this.removeProperty(name);
             this.getDataProp()
                 .addPropertyAssignment({
                 name: name,

@@ -26,13 +26,16 @@
     "test:snyk": "snyk test",
     "test:sonarQube": "node sonarqube.js",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "develop": "rimraf dist && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" ",
+    "develop": "rimraf dist && npm run build && tsc-watch --project tsconfig.json --onSuccess \"node dist/index.js\" ",
     "deploy": "npm run build",
     "deploy:compodoc": "compodoc -p tsconfig.json"
   },
   "dependencies": {
     "aws-lambda": "^1.0.6",
     "axios": "^0.21.1",
+    "bluebird": "^3.7.2",
+    "chalk": "^4.1.0",
+    "child_process": "^1.0.2",
     "fs-extra": "^9.1.0",
     "iconv-lite": "^0.6.2",
     "jszip": "^3.5.0",
@@ -47,7 +50,6 @@
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.11",
     "@hapi/joi": "^17.1.1",
-    "@types/aws-sdk": "^2.7.0",
     "@types/fs-extra": "^9.0.6",
     "@types/hapi__joi": "^16.0.12",
     "@types/jest": "^25.2.3",
@@ -62,6 +64,7 @@
     "fork-ts-checker-webpack-plugin": "^3.0.1",
     "jest": "^25.5.4",
     "rimraf": "^3.0.2",
+    "serverless": ">=2.20.1",
     "serverless-webpack": "^5.2.0",
     "snyk": "^1.439.1",
     "sonarqube-scanner": "^2.8.0",
