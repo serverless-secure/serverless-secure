@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "es2017"],
+    "lib": ["dom", "es2019"],
     "removeComments": true,
     "moduleResolution": "node",
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": false,

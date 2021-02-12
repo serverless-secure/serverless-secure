@@ -85,9 +85,9 @@ var ServerlessSecure = (function () {
     function ServerlessSecure(serverless, options) {
         this.isYaml = false;
         this.functionList = {};
-        this.keyArn = [];
         this.secretArn = [];
         this.secretPath = [];
+        this.keyArn = [];
         this.baseTS = path.join(process.cwd(), 'serverless.ts');
         this.baseYAML = path.join(process.cwd(), 'serverless.yml');
         this.baseLayer = path.join(process.cwd(), './secure_layer');
@@ -343,9 +343,9 @@ var ServerlessSecure = (function () {
         delete content['provider']['variableSyntax'];
         delete content['provider']['versionFunctions'];
         delete content['provider']['environment']['AWS_NODEJS_CONNECTION_REUSE_ENABLED'];
-        content['provider']['environment']['SLS_SECRET_KEY'] = this.secretPath[0] || 'MySecureKey';
-        content['provider']['environment']['SLS_PUBLIC_KEY'] = this.secretPath[1] || 'MyPublicKey';
-        content['provider']['environment']['SLS_PRIVATE_KEY'] = this.secretPath[2] || 'MyPrivateKey';
+        content['provider']['environment']['SLS_SECRET_KEY'] = this.secretPath[0] || 'sls secure-key --passphrase <password>';
+        content['provider']['environment']['SLS_PUBLIC_KEY'] = this.secretPath[1] || 'sls secure-key --passphrase <password>';
+        content['provider']['environment']['SLS_PRIVATE_KEY'] = this.secretPath[2] || 'sls secure-key --passphrase <password>';
         content['provider'] = helper_1.default.sortKeys(content['provider']);
         return content;
     };
@@ -444,7 +444,7 @@ var ServerlessSecure = (function () {
             });
         });
     };
-    ServerlessSecure.prototype.assignSecretFunc = function (content, opath, commands) {
+    ServerlessSecure.prototype.assignSecretFunc = function (content, __, commands) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, _b;
             return __generator(this, function (_c) {
@@ -699,7 +699,7 @@ var ServerlessSecure = (function () {
                     case 0:
                         this.yawn.json = _.assign({}, this.yawn.json, content);
                         return [4, fse.writeFile(this.secureYAML, this.yawn.yaml, { encoding: 'utf8' })
-                                .then(function (e) { return _this.notification('YAML File Updated!', 'info'); })
+                                .then(function (__) { return _this.notification('YAML File Updated!', 'info'); })
                                 .catch(function (e) { return _this.notification(e.message, 'error'); })];
                     case 1:
                         _a.sent();

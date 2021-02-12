@@ -116,9 +116,9 @@ exports.parseData = function (data) {
     }
 };
 exports.updateApiKeys = function (content) {
-    var provider = content.provider;
+    var provider = content.provider, service = content.service;
     if (provider && !_.has(provider, 'apiKeys')) {
-        return ['sls-secure-auth${opt:stage, `dev`}'];
+        return [service + "-${opt:stage, 'dev'}"];
     }
     return _.uniq(provider['apiKeys']);
 };

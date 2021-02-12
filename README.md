@@ -1,6 +1,6 @@
 <h1 align="center">✨ Serverless-Secure [Beta] ✨ </h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.1.Beta-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.5.Beta-blue.svg?cacheSeconds=2592000" />
   <a href="https://serverless-secure.github.io/" target="_blank">
     <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
   </a>
@@ -87,11 +87,29 @@ $ sls secure-session -p mysession
 ## Employ session
 
 ```sh
-$ curl --location --request POST 'http://localhost:3000/dev/b34ef189e21240.....143de480387a/session' \
+$ curl --location --request POST 'http://localhost:3000/dev/b34ef189e......143de480387a/session' \
 --header 'Authorization: true' \
 --header 'Content-Type: text/plain' \
 --data-raw '{
 }'
+```
+## Build an Encryption Route (MITM)
+
+```sh
+$ sls secure-secret --passphrase mysecret
+```
+
+## Employ EnCrption / DeCryption
+
+```sh
+$ curl --location --request POST 'http://localhost:3000/dev/EnCryptMessage' \
+--header 'Content-Type: application/json' \
+--data-raw '{"message": "Man in the middle message"}'
+```
+```sh
+$ curl --location --request POST 'http://localhost:3000/dev/DeCryptMessage' \
+--header 'Content-Type: application/json' \
+--data-raw '{"message":"gePrUcw2F....dYLhnknBG4ttegpP0fA=="}'
 ```
 ***
 ## Headers:
@@ -120,9 +138,16 @@ $ sls secure-whitelist -ip 127.0.0.1
 $ npm run test
 ```
 ***
+## Utilities:
+* $ sls secure-key
+* $ sls secure-policy
+
 ## Alpha Version 🛠 TODO 🛠️
-* $ sls secure-encrypt
+* $ sls secure-email
+* $ sls secure-message
+* $ sls secure-headers
 * $ sls secure-monitor
+* $ sls secure-database
 * ...and much much more...
 
 ## Author 👤 **Serverless-Secure**

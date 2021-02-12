@@ -13,13 +13,13 @@ export declare class ServerlessSecure {
     private KeyMetadata;
     private functionList;
     private SSMdata;
-    private keyArn;
     private secretArn;
     private secretPath;
     policy: any[];
     valid: Service;
     keyName: string;
     Passphrase: string;
+    keyArn: string | string[];
     options: {
         path: string;
         p: string;
@@ -44,7 +44,7 @@ export declare class ServerlessSecure {
     contentUpdate(_content: any): Serverless;
     parseConfigFile(_content: Serverless): Promise<void>;
     mapSecure(content: Serverless, opath: any, commands: any): Promise<Serverless>;
-    assignSecretFunc(content: any, opath: any, commands: any): Promise<Serverless>;
+    assignSecretFunc(content: any, __: any, commands: any): Promise<Serverless>;
     assignSecureFunc(content: any, opath: any, commands: any): Promise<Serverless>;
     assignSessionFunc(content: any, opath: any, commands: any): Promise<Serverless>;
     AWSCLIData(provider: string, options: any[]): any;

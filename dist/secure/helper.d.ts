@@ -24,9 +24,7 @@ export declare const updateLayers: (content: Serverless, commands: any) => (AWS.
 });
 export declare const updateEnv: (content: Serverless) => any;
 export declare const parseData: (data: any) => any;
-export declare const updateApiKeys: (content: {
-    provider: any;
-}) => unknown[];
+export declare const updateApiKeys: (content: Serverless) => string[];
 export declare const updateSession: (content: any, opath: string) => Promise<any>;
 export declare const getPolicyType: (arnType: any, word: any) => any[];
 export declare const setOptions: (events: any) => Promise<void>;
@@ -46,9 +44,7 @@ declare const _default: {
     updateFunctions: (content: any, opath: string) => AWS.Functions;
     formatIpaddress: (ips: string[], opath?: string) => string;
     cleanFunction: (ele: AWS.Event) => void;
-    updateApiKeys: (content: {
-        provider: any;
-    }) => unknown[];
+    updateApiKeys: (content: AWS.Serverless) => string[];
     updateSession: (content: any, opath: string) => Promise<any>;
     getPolicyType: (arnType: any, word: any) => any[];
     generateKeys: (passphrase: any) => crypto.KeyPairSyncResult<string, string>;
