@@ -99,7 +99,7 @@ $ curl --location --request POST 'http://localhost:3000/dev/b34ef189e......143de
 $ sls secure-secret --passphrase mysecret
 ```
 
-## Employ EnCrption / DeCryption
+## Employ EnCryption / DeCryption
 
 ```sh
 $ curl --location --request POST 'http://localhost:3000/dev/EnCryptMessage' \
